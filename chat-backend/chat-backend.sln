@@ -5,9 +5,11 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-backend", "chat-backend.csproj", "{16375CA4-0A3A-4487-84EC-6EA767414F52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence", "..\Persistence\Persistence.csproj", "{7AF0C649-62B6-49B0-AC31-19620BC4E94E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "..\Persistence\Persistence.csproj", "{7AF0C649-62B6-49B0-AC31-19620BC4E94E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "..\Shared\Shared.csproj", "{A793CF06-77E6-4401-A3CF-2ED566FB25DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "..\Shared\Shared.csproj", "{A793CF06-77E6-4401-A3CF-2ED566FB25DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Tests", "..\Backend.Tests\Backend.Tests.csproj", "{13B7CFBD-5981-4757-BCBE-FA7E561EC060}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
