@@ -1,3 +1,4 @@
+using chat_backend.Services;
 using NLog;
 using NLog.Web;
 using Persistence;
@@ -26,6 +27,7 @@ namespace chat_backend
                 builder.Services.AddSession();
 
                 builder.Services.AddSingleton<AppSettings>();
+                builder.Services.AddScoped <AuthService>();
 
                 builder.Services.AddPersistence(builder.Configuration);
 

@@ -27,5 +27,6 @@ namespace Persistence.Models
         public string Password { get; set; } = string.Empty;
 
         public virtual ICollection<ChatToUser> Users { get; set; } = default!;
+        public virtual ICollection<Message> Messages { get; set; } = default!;
     }
 }

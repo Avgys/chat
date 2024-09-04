@@ -19,21 +19,5 @@ namespace chat_backend.Controllers
         {
             return "value";
         }
-
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-            HttpContext.Session.SetString(SESSION_VALUE, value);
-        }
-
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

@@ -25,7 +25,10 @@ namespace Persistence
                 .ToTable("Client");
 
             modelBuilder.Entity<Chat>()
-                .ToTable("Chat");
+                .ToTable("Chat")
+                .HasMany(x => x.Messages)
+                .WithOne(x => x.Chat)
+                .HasForeignKey(x => x.ChatId);
 
             modelBuilder.Entity<Message>()
                 .ToTable("Message");
