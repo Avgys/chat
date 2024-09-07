@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.Models;
@@ -13,6 +14,7 @@ namespace chat_backend.Controllers
         private readonly ILogger<MessageSend> logger = logger;
         private const string CLIENT_ID = "CLIENT_ID";
 
+        [Authorize(Policy = Auth.UserPolicy)]
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] MessageModel message)
         {
@@ -39,7 +41,7 @@ namespace chat_backend.Controllers
 
             return Ok();
         }
-                
+
         private async Task<Chat> GetSharedDirectChat(int senderId, int receiverId)
         {
             var chat = dbContext.Chats

@@ -12,9 +12,9 @@ namespace Backend.Tests
     {
         private WebApplicationFactory<Program> webAppFactory;
 
-        private User testUser1;
-        private User testUser2;
-
+        private User _testUser1;
+        private User _testUser2;
+        private const string _messageSend = "api/MessageSend";
         [OneTimeSetUp]
         public void Setup()
         {
@@ -23,8 +23,8 @@ namespace Backend.Tests
             using var scope = webAppFactory.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-            testUser1 = GetOrAddUser(dbContext, "Test1");
-            testUser2 = GetOrAddUser(dbContext, "Test2");
+            _testUser1 = GetOrAddUser(dbContext, "Test1");
+            _testUser2 = GetOrAddUser(dbContext, "Test2");
             dbContext.SaveChanges();
         }
 
@@ -45,9 +45,9 @@ namespace Backend.Tests
             using var httpClient = webAppFactory.CreateDefaultClient();
             var testText = "TestMessage";
 
-            var content = new StringContent($"{{ \"senderId\": {testUser1.Id}, \"cliendId\": {testUser2.Id},\"messageText\": \"{testText}\" }}", new MediaTypeHeaderValue("application/json"));
-            var url = "api/MessageSend";
-            var result = await httpClient.PostAsync(url, content);
+            var content = new StringContent($"{{ \"senderId\": {_testUser1.Id}, \"cliendId\": {_testUser2.Id},\"messageText\": \"{testText}\" }}", new MediaTypeHeaderValue("application/json"));
+       
+            var result = await httpClient.PostAsync(_messageSend, content);
             Assert.That(result.IsSuccessStatusCode);
 
             using var scope = webAppFactory.Services.CreateScope();
@@ -55,7 +55,7 @@ namespace Backend.Tests
             var chat = dbContext.Chats
                .Where(x => !x.IsGroup)
                .Include(x => x.Users)
-               .Where(y => y.Users.Any(x => x.UserId == testUser1.Id) && y.Users.Any(x => x.UserId == testUser2.Id))
+               .Where(y => y.Users.Any(x => x.UserId == _testUser1.Id) && y.Users.Any(x => x.UserId == _testUser2.Id))
                .Include(x => x.Messages)
                .Single();
             

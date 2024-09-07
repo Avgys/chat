@@ -1,22 +1,19 @@
 ﻿using FluentMigrator;
-using System.Data;
 
 namespace Persistence.Migrations
 {
-    [Migration(03)]
-    public class AddedPasswordMigration : Migration
+    [Migration(04)]
+    public class AddedRoleMask : Migration
     {
         public override void Up()
         {
             Alter.Table("Client")
-                .AddColumn("ClientHashSalt").AsString(8).WithDefaultValue(0)
-                .AddColumn("PasswordHash").AsString(84).WithDefaultValue("NotPassword");
+                .AddColumn("Role").AsInt32().WithDefaultValue(0);
         }
 
         public override void Down()
         {
-            Delete.Column("Description")
-                .Column("Password").FromTable("Chat");
+            Delete.Column("Role").FromTable("Chat");
         }
     }
 }

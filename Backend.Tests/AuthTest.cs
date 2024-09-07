@@ -2,13 +2,18 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence;
+using System.Net.Http.Json;
 
 namespace Backend.Tests
 {
     public class AuthTest
     {
         private WebApplicationFactory<Program> webAppFactory;
-        private HttpClient httpClient;
+
+        private const string _authUrl= "api/auth";
+        private const string _saltUrl = _authUrl + "/salt";
+        private const string _loginUrl = _authUrl + "/login";
+        private const string _registerUrl = _authUrl + "/register";
 
         private readonly (string Login, string Password) _credentials = ("TestUser", "TestPassword");
 
@@ -25,15 +30,33 @@ namespace Backend.Tests
         public async Task RegisterTest()
         {
             using var client = webAppFactory.CreateDefaultClient();
-            var 
-            var url = "api/register/getSalt";
-            await client.GetAsync(url);
+
+            var salt = await client.GetAsync(_saltUrl);
+            Assert.That(salt.IsSuccessStatusCode);
+            var registerModel = new AuthModel
+            {
+                ClientPasswordHash = _credentials.Password,
+                ClientSalt = salt.Content.ReadAsStringAsync().Result,
+                Name = _credentials.Login
+            };
+
+            var response = await client.PostAsync(_registerUrl, JsonContent.Create(registerModel));
+            Assert.That(response.IsSuccessStatusCode);
         }
 
         [Test]
-        public void LoginTest()
+        public async Task LoginTest()
         {
+            using var client = webAppFactory.CreateDefaultClient();
 
+            var credentials = new AuthModel
+            {
+                ClientPasswordHash = _credentials.Password,
+                Name = _credentials.Login
+            };
+
+            var response = await client.PostAsync(_loginUrl, JsonContent.Create(credentials));
+            Assert.That(response.IsSuccessStatusCode);
         }
 
         [OneTimeTearDown]

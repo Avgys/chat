@@ -1,5 +1,8 @@
 ﻿using chat_backend.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Security.Claims;
 
 namespace chat_backend.Controllers
 {
@@ -7,18 +10,18 @@ namespace chat_backend.Controllers
     [ApiController]
     public class AuthController(AuthService passwordService, ILogger<AuthController> logger) : ControllerBase
     {
+        public const string AuthScheme = "AuthCookie";
         private readonly AuthService passwordService = passwordService;
         private readonly ILogger<AuthController> logger = logger;
 
-        [HttpGet("/register/getSalt")]
+        [HttpGet("salt")]
         public IActionResult GetSalt()
         {
             var salt = passwordService.GetSalt();
-            var basedSalt = Convert.ToBase64String(salt);
-            return Ok(basedSalt);
+            return Ok(salt);
         }
 
-        [HttpPost("/register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] AuthModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Name)
@@ -37,8 +40,42 @@ namespace chat_backend.Controllers
             }
         }
 
-        [HttpPost("/login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Name)
+                || string.IsNullOrWhiteSpace(model.ClientPasswordHash))
+                return BadRequest("No enough credentials");
+
+            try
+            {
+                var success = await passwordService.Login(model);
+                if (success)
+                {
+                    await SetUserRole(model.IsStaySignIn);
+                }
+
+                return Ok(success);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, ex.Message);
+                return BadRequest("Error registering");
+            }
+        }
+
+        private async Task SetUserRole(bool isPersistent)
+        {
+            var claims = new List<Claim> { new(ClaimTypes.Role, "User") };
+
+            var identity = new ClaimsIdentity(claims, AuthScheme);
+            var options = new AuthenticationProperties { IsPersistent = isPersistent };
+
+            await HttpContext.SignInAsync(AuthScheme, new ClaimsPrincipal(identity), options);
+        }
+
+        [HttpDelete("delete")]
+        public async Task<IActionResult> Delete([FromBody] AuthModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Name)
                 || string.IsNullOrWhiteSpace(model.ClientPasswordHash))

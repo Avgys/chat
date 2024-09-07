@@ -1,3 +1,4 @@
+using chat_backend.Controllers;
 using chat_backend.Services;
 using NLog;
 using NLog.Web;
@@ -27,9 +28,21 @@ namespace chat_backend
                 builder.Services.AddSession();
 
                 builder.Services.AddSingleton<AppSettings>();
-                builder.Services.AddScoped <AuthService>();
+                builder.Services.AddScoped<AuthService>();
 
                 builder.Services.AddPersistence(builder.Configuration);
+
+                builder.Services.AddAuthentication().AddCookie(AuthController.AuthScheme, options =>
+                    {
+                        options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                        options.Cookie.Name = "RandomName";
+                        options.LoginPath = "/api/auth/login";
+                    });
+
+                builder.Services.AddAuthorization(options =>
+                {
+                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim("Role", "User"));
+                });
 
                 var app = builder.Build();
 
@@ -41,7 +54,13 @@ namespace chat_backend
 
                 app.UseHttpsRedirection();
                 app.UseSession();
+
+                app.UseAuthentication();
+                app.UseAuthorization();
+
                 app.MapControllers();
+
+
                 app.Run();
             }
             catch (Exception ex)

@@ -37,7 +37,6 @@ namespace chat_backend.Services
 
         public async Task<bool> Login(AuthModel model)
         {
-
             var client = _dbContext.Users.FirstOrDefault(x => x.Name == model.Name.Trim());
 
             if (client == null)
@@ -57,9 +56,14 @@ namespace chat_backend.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public byte[] GetSalt()
+        public string GetSalt()
         {
-            return RandomNumberGenerator.GetBytes(4);
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(4));
+        }
+
+        public string? GetSalt(string login)
+        {
+            return _dbContext.Users.FirstOrDefault(x => x.Name == login)?.ClientHashSalt;
         }
     }
 }
