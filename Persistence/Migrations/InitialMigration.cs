@@ -8,38 +8,38 @@ namespace Persistence.Migrations
     {
         public override void Up()
         {
-            Create.Table("Client")
+            Create.Table("Users")
                 .WithColumn("Id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("Name").AsString(64).NotNullable().WithDefaultValue("DefaultName");
 
-            Create.Table("Chat")
+            Create.Table("Chats")
                 .WithColumn("Id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("Name").AsString(64).NotNullable().WithDefaultValue("DefaultChatName")
                 .WithColumn("IsGroup").AsBoolean().NotNullable().WithDefaultValue(false);
 
             Create.Table("ChatToUser")
                 .WithColumn("ChatId").AsInt32().NotNullable()
-                    .ForeignKey("Chat", "Id").OnDelete(Rule.Cascade)
+                    .ForeignKey("Chats", "Id").OnDeleteOrUpdate(Rule.Cascade)
                 .WithColumn("UserId").AsInt32().NotNullable()
-                    .ForeignKey("Client", "Id").OnDelete(Rule.Cascade);
+                    .ForeignKey("Users", "Id").OnDeleteOrUpdate(Rule.Cascade);
 
             Create.PrimaryKey().OnTable("ChatToUser").Columns("ChatId", "UserId");
 
-            Create.Table("Message")
+            Create.Table("Messages")
                 .WithColumn("Id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("Text").AsString(255).NotNullable()
                 .WithColumn("TimeStampUtc").AsDateTime().NotNullable()
-                .WithColumn("SenderId").AsInt32().NotNullable().ForeignKey("Client", "Id")
-                .WithColumn("ChatId").AsInt32().NotNullable().ForeignKey("Chat", "Id");
+                .WithColumn("SenderId").AsInt32().NotNullable().ForeignKey("Users", "Id")
+                .WithColumn("ChatId").AsInt32().NotNullable().ForeignKey("Chats", "Id");
                 
         }
 
         public override void Down()
         {
-            Delete.Table("Message");
+            Delete.Table("Messages");
             Delete.Table("ChatToUser");
-            Delete.Table("Chat");
-            Delete.Table("Client");
+            Delete.Table("Chats");
+            Delete.Table("Users");
         }
     }
 }

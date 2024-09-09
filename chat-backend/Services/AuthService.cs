@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.Models;
 using System.Security.Cryptography;
@@ -26,7 +25,8 @@ namespace chat_backend.Services
             {
                 Name = model.Name,  
                 ClientHashSalt = model.ClientSalt!,
-                PasswordHash = _passwordHasher.HashPassword(default!, model.ClientPasswordHash)
+                PasswordHash = _passwordHasher.HashPassword(default!, model.ClientPasswordHash),
+                Role = _dbContext.Roles.First(x => x.Name == Role.User)
             };
 
             await _dbContext.Users.AddAsync(client);

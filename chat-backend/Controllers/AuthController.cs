@@ -1,6 +1,8 @@
-﻿using chat_backend.Services;
+﻿using chat_backend.Misc;
+using chat_backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Persistence.Models;
 using System.Net;
 using System.Security.Claims;
 
@@ -10,7 +12,7 @@ namespace chat_backend.Controllers
     [ApiController]
     public class AuthController(AuthService passwordService, ILogger<AuthController> logger) : ControllerBase
     {
-        public const string AuthScheme = "AuthCookie";
+        private const string AuthScheme = AuthConsts.AuthScheme;
         private readonly AuthService passwordService = passwordService;
         private readonly ILogger<AuthController> logger = logger;
 
@@ -24,9 +26,7 @@ namespace chat_backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] AuthModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Name)
-                || string.IsNullOrWhiteSpace(model.ClientSalt)
-                || string.IsNullOrWhiteSpace(model.ClientPasswordHash))
+            if (!ModelState.IsValid)
                 return BadRequest("No enough credentials");
 
             try
@@ -43,8 +43,7 @@ namespace chat_backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] AuthModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Name)
-                || string.IsNullOrWhiteSpace(model.ClientPasswordHash))
+            if (!ModelState.IsValid)
                 return BadRequest("No enough credentials");
 
             try
@@ -66,7 +65,7 @@ namespace chat_backend.Controllers
 
         private async Task SetUserRole(bool isPersistent)
         {
-            var claims = new List<Claim> { new(ClaimTypes.Role, "User") };
+            var claims = new List<Claim> { new(AuthConsts.RoleClaim, Role.User) };
 
             var identity = new ClaimsIdentity(claims, AuthScheme);
             var options = new AuthenticationProperties { IsPersistent = isPersistent };
@@ -77,8 +76,7 @@ namespace chat_backend.Controllers
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromBody] AuthModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Name)
-                || string.IsNullOrWhiteSpace(model.ClientPasswordHash))
+            if (!ModelState.IsValid)
                 return BadRequest("No enough credentials");
 
             try

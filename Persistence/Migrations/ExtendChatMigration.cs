@@ -1,5 +1,4 @@
 ﻿using FluentMigrator;
-using System.Data;
 
 namespace Persistence.Migrations
 {
@@ -8,16 +7,15 @@ namespace Persistence.Migrations
     {
         public override void Up()
         {
-            Alter.Table("Chat")
+            Alter.Table("Chats")
                 .AddColumn("Description").AsString(64)
                 .AddColumn("Password").AsString(64);
-
         }
 
         public override void Down()
         {
             Delete.Column("Description")
-                .Column("Password").FromTable("Chat");
+                .Column("Password").FromTable("Chats");
         }
     }
 }

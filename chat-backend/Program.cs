@@ -1,8 +1,9 @@
-using chat_backend.Controllers;
+using chat_backend.Misc;
 using chat_backend.Services;
 using NLog;
 using NLog.Web;
 using Persistence;
+using Persistence.Models;
 using Shared.Misc;
 
 namespace chat_backend
@@ -32,16 +33,16 @@ namespace chat_backend
 
                 builder.Services.AddPersistence(builder.Configuration);
 
-                builder.Services.AddAuthentication().AddCookie(AuthController.AuthScheme, options =>
-                    {
-                        options.ExpireTimeSpan = TimeSpan.FromDays(1);
-                        options.Cookie.Name = "RandomName";
-                        options.LoginPath = "/api/auth/login";
-                    });
+                builder.Services.AddAuthentication().AddCookie(AuthConsts.AuthScheme, options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                    options.Cookie.Name = AuthConsts.CookieName;
+                    options.LoginPath = "/api/auth/login";
+                });
 
                 builder.Services.AddAuthorization(options =>
                 {
-                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim("Role", "User"));
+                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim(AuthConsts.RoleClaim, Role.User));
                 });
 
                 var app = builder.Build();

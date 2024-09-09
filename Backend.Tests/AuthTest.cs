@@ -33,10 +33,13 @@ namespace Backend.Tests
 
             var salt = await client.GetAsync(_saltUrl);
             Assert.That(salt.IsSuccessStatusCode);
+
+            var saltText = salt.Content.ReadAsStringAsync().Result;
+
             var registerModel = new AuthModel
             {
-                ClientPasswordHash = _credentials.Password,
-                ClientSalt = salt.Content.ReadAsStringAsync().Result,
+                ClientPasswordHash = _credentials.Password + saltText,
+                ClientSalt = saltText,
                 Name = _credentials.Login
             };
 
