@@ -18,7 +18,7 @@ namespace Persistence.Migrations
 
 
             Insert.IntoTable("Roles")
-                .Row(new { Name = Role.User })
+                .Row(new { Name = Role.Client })
                 .Row(new { Name = Role.Admin });
         }
 

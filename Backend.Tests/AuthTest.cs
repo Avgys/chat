@@ -36,7 +36,7 @@ namespace Backend.Tests
 
             var saltText = salt.Content.ReadAsStringAsync().Result;
 
-            var registerModel = new AuthModel
+            var registerModel = new AuthModelRequest
             {
                 ClientPasswordHash = _credentials.Password + saltText,
                 ClientSalt = saltText,
@@ -52,9 +52,15 @@ namespace Backend.Tests
         {
             using var client = webAppFactory.CreateDefaultClient();
 
-            var credentials = new AuthModel
+            var salt = await client.GetAsync(_saltUrl);
+            Assert.That(salt.IsSuccessStatusCode);
+
+            var saltText = salt.Content.ReadAsStringAsync().Result;
+
+            var credentials = new AuthModelRequest
             {
-                ClientPasswordHash = _credentials.Password,
+                ClientPasswordHash = _credentials.Password + saltText,
+                ClientSalt = saltText,
                 Name = _credentials.Login
             };
 

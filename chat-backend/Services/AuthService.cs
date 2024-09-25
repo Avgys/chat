@@ -16,7 +16,7 @@ namespace chat_backend.Services
             _dbContext = databaseContext;
         }
 
-        public async Task<bool> Register(AuthModel model)
+        public async Task<bool> Register(AuthModelRequest model)
         {
             if (_dbContext.Users.Any(x => x.Name == model.Name.Trim()))
                 return false;
@@ -26,7 +26,7 @@ namespace chat_backend.Services
                 Name = model.Name,  
                 ClientHashSalt = model.ClientSalt!,
                 PasswordHash = _passwordHasher.HashPassword(default!, model.ClientPasswordHash),
-                Role = _dbContext.Roles.First(x => x.Name == Role.User)
+                Role = _dbContext.Roles.First(x => x.Name == Role.Client)
             };
 
             await _dbContext.Users.AddAsync(client);
@@ -35,7 +35,7 @@ namespace chat_backend.Services
             return true;
         }
 
-        public async Task<bool> Login(AuthModel model)
+        public async Task<bool> Login(AuthModelRequest model)
         {
             var client = _dbContext.Users.FirstOrDefault(x => x.Name == model.Name.Trim());
 
@@ -50,7 +50,7 @@ namespace chat_backend.Services
             return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
         }
 
-        private async Task UpdatePassword(AuthModel model, User client)
+        private async Task UpdatePassword(AuthModelRequest model, User client)
         {
             client.PasswordHash = _passwordHasher.HashPassword(default!, model.ClientPasswordHash);
             await _dbContext.SaveChangesAsync();
@@ -61,9 +61,9 @@ namespace chat_backend.Services
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(4));
         }
 
-        public string? GetSalt(string login)
+        public string GetSalt(string login)
         {
-            return _dbContext.Users.FirstOrDefault(x => x.Name == login)?.ClientHashSalt;
+            return _dbContext.Users.FirstOrDefault(x => x.Name == login)?.ClientHashSalt ?? "no such user";
         }
     }
 }

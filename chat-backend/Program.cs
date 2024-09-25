@@ -1,5 +1,6 @@
 using chat_backend.Misc;
 using chat_backend.Services;
+using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Web;
 using Persistence;
@@ -32,7 +33,16 @@ namespace chat_backend
                 builder.Services.AddScoped<AuthService>();
 
                 builder.Services.AddPersistence(builder.Configuration);
-
+#if DEBUG
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowReactApp",
+                    builder => builder
+                       .WithOrigins("http://localhost:3000")
+                       .AllowAnyHeader()
+                       .AllowAnyMethod());
+                });
+#endif
                 builder.Services.AddAuthentication().AddCookie(AuthConsts.AuthScheme, options =>
                 {
                     options.ExpireTimeSpan = TimeSpan.FromDays(1);
@@ -42,7 +52,7 @@ namespace chat_backend
 
                 builder.Services.AddAuthorization(options =>
                 {
-                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim(AuthConsts.RoleClaim, Role.User));
+                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim(AuthConsts.RoleClaim, Role.Client));
                 });
 
                 var app = builder.Build();
@@ -52,6 +62,8 @@ namespace chat_backend
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
+
+                app.UseCors("AllowReactApp");
 
                 app.UseHttpsRedirection();
                 app.UseSession();
