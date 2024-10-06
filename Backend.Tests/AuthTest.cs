@@ -1,4 +1,5 @@
-﻿using chat_backend;
+﻿using AuthService.Models;
+using chat_backend;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence;

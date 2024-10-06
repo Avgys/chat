@@ -33,7 +33,7 @@ namespace Persistence
                 .AddLogging(lb => lb.AddFluentMigratorConsole());
 
             using var scope = services.BuildServiceProvider(false).CreateScope();
-
+            
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             runner.MigrateUp();
 

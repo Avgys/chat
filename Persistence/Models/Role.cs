@@ -4,8 +4,8 @@ namespace Persistence.Models
 {
     public class Role
     {
-        public static string Client = "Client";
-        public static string Admin = "Admin";
+        public const string Client = "Client";
+        public const string Admin = "Admin";
 
         [Key]
         public int Id { get; set; }

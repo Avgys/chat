@@ -11,6 +11,8 @@ namespace Persistence
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
         }
@@ -26,6 +28,11 @@ namespace Persistence
                 .HasMany<User>()
                 .WithOne(x => x.Role)
                 .HasForeignKey(x => x.RoleId);
+
+            modelBuilder.Entity<User>()
+                .HasMany<RefreshToken>()
+                .WithOne(x => x.User)
+                .HasForeignKey(x => x.UserId);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AuthService.Misc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -8,7 +9,7 @@ namespace chat_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = Auth.UserPolicy)]
+    [Authorize(Roles = Role.Client)]
     public class UsersController(DatabaseContext dbContext, ILogger<MessageSend> logger) : ControllerBase
     {
         private readonly DatabaseContext dbContext = dbContext;

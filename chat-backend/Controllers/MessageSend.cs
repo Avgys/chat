@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using chat_backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -14,7 +15,7 @@ namespace chat_backend.Controllers
         private readonly ILogger<MessageSend> logger = logger;
         private const string CLIENT_ID = "CLIENT_ID";
 
-        [Authorize(Policy = Auth.UserPolicy)]
+        [Authorize(Roles = Role.Client)]
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] MessageModel message)
         {

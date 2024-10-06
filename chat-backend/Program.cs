@@ -1,11 +1,13 @@
-using chat_backend.Misc;
-using chat_backend.Services;
-using Microsoft.Extensions.Options;
+using AuthService.Misc;
+using AuthService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using Persistence;
 using Persistence.Models;
 using Shared.Misc;
+using System.Text;
 
 namespace chat_backend
 {
@@ -22,15 +24,14 @@ namespace chat_backend
                 builder.Logging.ClearProviders();
                 builder.Host.UseNLog();
 
-                builder.Services.AddControllers();
+                builder.Services.AddControllers()
+                    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
 
-                builder.Services.AddDistributedMemoryCache();
-                builder.Services.AddSession();
-
                 builder.Services.AddSingleton<AppSettings>();
-                builder.Services.AddScoped<AuthService>();
+                builder.Services.AddScoped<AuthenticateService>();
 
                 builder.Services.AddPersistence(builder.Configuration);
 #if DEBUG
@@ -43,18 +44,22 @@ namespace chat_backend
                        .AllowAnyMethod());
                 });
 #endif
-                builder.Services.AddAuthentication().AddCookie(AuthConsts.AuthScheme, options =>
-                {
-                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
-                    options.Cookie.Name = AuthConsts.CookieName;
-                    options.LoginPath = "/api/auth/login";
-                });
+                builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
+                            ValidAudience = builder.Configuration["Jwt:Audience"]!,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                        };
+                    });
 
-                builder.Services.AddAuthorization(options =>
-                {
-                    options.AddPolicy(Auth.UserPolicy, policy => policy.RequireClaim(AuthConsts.RoleClaim, Role.Client));
-                });
-
+               
                 var app = builder.Build();
 
                 if (app.Environment.IsDevelopment())
@@ -66,13 +71,11 @@ namespace chat_backend
                 app.UseCors("AllowReactApp");
 
                 app.UseHttpsRedirection();
-                app.UseSession();
 
                 app.UseAuthentication();
                 app.UseAuthorization();
 
                 app.MapControllers();
-
 
                 app.Run();
             }

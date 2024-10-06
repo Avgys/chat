@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "..\Persisten
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "..\Shared\Shared.csproj", "{A793CF06-77E6-4401-A3CF-2ED566FB25DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend.Tests", "..\Backend.Tests\Backend.Tests.csproj", "{13B7CFBD-5981-4757-BCBE-FA7E561EC060}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend.Tests", "..\Backend.Tests\Backend.Tests.csproj", "{13B7CFBD-5981-4757-BCBE-FA7E561EC060}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "..\AuthService\AuthService.csproj", "{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
