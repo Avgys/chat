@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AuthService.Misc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
@@ -25,15 +26,16 @@ public class TokenService(DatabaseContext databaseContext, AppSettings appSettin
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, role.Name),
-            new(ClaimTypes.Name, user.Name)
+            new(AuthConsts.Claims.Role, role.Name),
+            new(AuthConsts.Claims.Name, user.Name),
+            new(AuthConsts.Claims.UserId, user.Id.ToString())
         };
 
         var token = new JwtSecurityToken(
             issuer: jwtInfo.Issuer,
             audience: jwtInfo.Audience,            
             claims: claims,
-            expires: DateTime.Now.AddHours(1),
+            expires: DateTime.Now.Add(AuthConsts.AccessExpire),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -54,16 +56,13 @@ public class TokenService(DatabaseContext databaseContext, AppSettings appSettin
                 await _dbContext.RefreshTokens.Where(x => x.TokenId == oldTokenId).ExecuteDeleteAsync();
         }
 
-        var storedToken = new RefreshToken() { UserId = user.Id, TokenId = tokenId, ExpirationDateUtc = GetRefreshExpiration() };
+        var storedToken = new RefreshToken() { UserId = user.Id, TokenId = tokenId, ExpirationDateUtc = DateTime.UtcNow.Add(AuthConsts.RefreshExpire) };
         _dbContext.RefreshTokens.Add(storedToken);
         await _dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
 
         return tokenId;
     }
-
-    public static DateTime GetRefreshExpiration() => DateTime.UtcNow.AddDays(1);
-    public static DateTime GetAccessExpiration() => DateTime.UtcNow.AddMinutes(10);
 
     public JwtSecurityToken DecodeToken(string refreshToken)
     {

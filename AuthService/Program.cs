@@ -41,9 +41,10 @@ public class Program
             {
                 options.AddPolicy("AllowReactApp",
                 builder => builder
-                   .WithOrigins("http://localhost:3000")
+                   .WithOrigins("http://localhost:3000", "https://localhost:3000")
                    .AllowAnyHeader()
-                   .AllowAnyMethod());
+                   .AllowAnyMethod()
+                   .AllowCredentials());
             });
 
             builder.Services.AddAuthentication()

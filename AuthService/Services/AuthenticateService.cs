@@ -1,12 +1,8 @@
-﻿using AuthService.Misc;
-using AuthService.Models;
+﻿using AuthService.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Models;
 using Shared.Misc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace AuthService.Services;
@@ -65,5 +61,17 @@ public class AuthenticateService(DatabaseContext databaseContext, AppSettings ap
     public string GetSalt(string login)
     {
         return _dbContext.Users.FirstOrDefault(x => x.Name == login)?.ClientHashSalt ?? "no such user";
+    }
+
+    public async Task<bool> DeleteUser(int userId)
+    {
+        var client = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+        if (client == null)
+            return false;
+
+        _dbContext.Users.Remove(client);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
     }
 }

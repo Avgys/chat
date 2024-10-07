@@ -9,7 +9,7 @@ namespace Persistence.Migrations
         {
             Create.Table("RefreshTokens")
                 .WithColumn("TokenId").AsGuid().PrimaryKey().NotNullable()
-                .WithColumn("UserId").AsInt32().NotNullable().ForeignKey("Users", "Id")
+                .WithColumn("UserId").AsInt32().NotNullable().ForeignKey("Users", "Id").OnDeleteOrUpdate(System.Data.Rule.Cascade)
                 .WithColumn("ExpirationDateUtc").AsDateTime().NotNullable();
         }
 

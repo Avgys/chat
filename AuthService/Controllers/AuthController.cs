@@ -10,14 +10,14 @@ namespace AuthService.Controllers;
 [Route("api/auth")]
 [ApiController]
 public class AuthController(
-    AuthenticateService passwordService,
+    AuthenticateService _authService,
     TokenService tokenService,
     ILogger<AuthController> logger) : ControllerBase
 {
     private const string AuthScheme = AuthConsts.AuthScheme;
-    private readonly AuthenticateService passwordService = passwordService;
-    private readonly TokenService tokenService = tokenService;
-    private readonly ILogger<AuthController> logger = logger;
+    private readonly AuthenticateService passwordService = _authService;
+    private readonly TokenService _tokenService = tokenService;
+    private readonly ILogger<AuthController> _logger = logger;
 
     [HttpGet("salt")]
     public IActionResult GetSalt([FromQuery(Name = "Name")] string? name)
@@ -39,7 +39,7 @@ public class AuthController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             return BadRequest("Error registering");
         }
     }
@@ -57,15 +57,15 @@ public class AuthController(
             if (user == null)
                 return Unauthorized("Wrong credentials");
 
-            var newToken = await tokenService.IssueRefreshTokenAsync(user);
+            var newToken = await _tokenService.IssueRefreshTokenAsync(user);
             IncludeRefreshTokenAsync(newToken);
-            var token = tokenService.IssueAccessToken(user);
+            var token = _tokenService.IssueAccessToken(user);
 
             return Ok(new { token });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             return BadRequest("Error login");
         }
     }
@@ -78,21 +78,21 @@ public class AuthController(
             if (!TryGetRefreshToken(out var guidToken))
                 return Unauthorized();
 
-            var user = await tokenService.GetUserByToken(guidToken);
+            var user = await _tokenService.GetUserByToken(guidToken);
 
             if (user == null)
                 return Unauthorized("User not found");
 
-            var newToken = await tokenService.IssueRefreshTokenAsync(user, guidToken);
+            var newToken = await _tokenService.IssueRefreshTokenAsync(user, guidToken);
             IncludeRefreshTokenAsync(newToken);
 
-            var token = tokenService.IssueAccessToken(user);
+            var token = _tokenService.IssueAccessToken(user);
 
             return Ok(new { token });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             return BadRequest("Error login");
         }
     }
@@ -109,24 +109,17 @@ public class AuthController(
             if (!TryGetRefreshToken(out var guid))
                 return Unauthorized();
 
-            var success = await tokenService.DeleteTokenAsync(guid);
+            var success = await _tokenService.DeleteTokenAsync(guid);
             Response.Cookies.Delete(AuthConsts.RefreshToken);
-            
+
             return success ? Ok(success) : Unauthorized();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             return BadRequest("Error loggin out");
         }
     }
-
-    //[Authorize(Roles = Role.Client)]
-    //[HttpGet("isAuth", Order = 0)]
-    //public IActionResult IsAuthorized()
-    //{
-    //    return Ok(true);
-    //}
 
     private bool TryGetRefreshToken(out Guid guidToken)
     {
@@ -138,27 +131,33 @@ public class AuthController(
     {
         Response.Cookies.Append(AuthConsts.RefreshToken, tokenId.ToString(), new CookieOptions()
         {
-            MaxAge = TimeSpan.FromDays(1),
-            HttpOnly = true,
+            MaxAge = AuthConsts.RefreshExpire,
+            Path = "/api/auth/private",
             Secure = true,
-            Path = "/api/auth/private"
+            HttpOnly = true,
+            SameSite = SameSiteMode.None
         });
     }
 
     [Authorize]
     [HttpDelete("delete")]
-    public async Task<IActionResult> Delete([FromBody] AuthModelRequest model)
+    public async Task<IActionResult> Delete()
     {
         if (!ModelState.IsValid)
             return BadRequest("No enough credentials");
 
         try
         {
-            return Ok(await passwordService.LoginAsync(model));
+            var userIdStr = User.Claims.FirstOrDefault(x => x.Type == AuthConsts.Claims.UserId)?.Value;
+
+            if (int.TryParse(userIdStr, out var userId))
+                return await _authService.DeleteUser(userId) ? Ok() : NotFound();
+            else
+                return Unauthorized("Wrong user bearer");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             return BadRequest("Error registering");
         }
     }
