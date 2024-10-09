@@ -1,37 +1,44 @@
+import { AuthService } from "./AuthService/AuthService";
+
 export class ApiService {
 
   static JsonHeader = new Headers({ 'Content-type': 'application/json' });
 
-  public static async DELETE(url: string, headers?: any) {
-    return await this.SendRequest(url, 'DELETE');
+  public static async DELETE<T>(url: string, includeBearer: boolean = false) {
+    return await this.SendRequest<T>(url, 'DELETE', includeBearer);
   }
 
-  public static async PATCH(url: string, payload: any, headers?: Headers) {
-    return await this.SendRequest(url, 'PATCH', this.JsonHeader, payload);
+  public static async PATCH<T>(url: string, payload: any, includeBearer: boolean = false) {
+    return await this.SendRequest<T>(url, 'PATCH', includeBearer, this.JsonHeader, payload);
   }
 
-  public static async POST(url: string, payload: any, headers?: Headers) {
-    return await this.SendRequest(url, 'POST', this.JsonHeader,  payload);
+  public static async POST<T>(url: string, payload: any, includeBearer: boolean = false) {
+    return await this.SendRequest<T>(url, 'POST', includeBearer, this.JsonHeader, payload);
   }
 
-  public static async GET(url: string, headers?: Headers) {
-    return await this.SendRequest(url, 'GET', headers);
+  public static async GET<T>(url: string, includeBearer: boolean = false) {
+    return await this.SendRequest<T>(url, 'GET', includeBearer);
   }
 
-  public static async SendRequest(url: string, method: Method, headers?: Headers, body?: any): Promise<any | null> {
-    const credentialsMode: CredentialsMode = IncludeCookieMatch.some(x => url.includes(x)) ?  'include' : 'omit';
-        
+  private static async SendRequest<T>(url: string, method: Method, includeBearer: boolean, headers?: Headers, body?: any,): Promise<T | null> {
+    const credentialsMode: CredentialsMode = IncludeCookieMatch.some(x => url.includes(x)) ? 'include' : 'omit';
+    if (includeBearer) {
+      headers = new Headers(headers);
+      const authHeader = AuthService.getAuthHeader();
+      headers.append(authHeader.header, authHeader.bearer);
+    }
+
     try {
       const response = await fetch(url, {
         method: method,
         headers: headers,
-        body: JSON.stringify(body), 
+        body: JSON.stringify(body),
         credentials: credentialsMode
       });
 
       if (!response.ok) {
         console.error('Error:', `HTTP error! Status: ${response.status}, to URL ${url}`);
-        return;
+        return null;
       }
 
       const contentType = response.headers.get("content-type")
@@ -41,7 +48,7 @@ export class ApiService {
         : response.text());
 
       console.log('Success');
-      return result;
+      return result as T;
     }
     catch (error) {
       console.error('Error:', error);

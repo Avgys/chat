@@ -3,7 +3,7 @@
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Credentials } from "@/types/Credentials";
+import { Credentials } from "@/Models/Credentials";
 import { useForm } from "react-hook-form";
 
 export default function LoginForm({onSubmit, buttonText} : { onSubmit: (a: Credentials) => void, buttonText: string}){

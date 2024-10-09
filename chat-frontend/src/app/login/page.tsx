@@ -2,19 +2,27 @@
 
 import Link from "next/link"
 import LoginForm from "@/components/ui/loginForm"
-import { Credentials } from "@/types/Credentials"
+import { Credentials } from "@/Models/Credentials"
 import { AuthService } from "@/ApiServices/AuthService/AuthService"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export default function LoginPageComponent() {
   const router = useRouter();
 
+  useEffect(() => {
+    AuthService.isAuth().then(isAuth => {
+      if (isAuth)
+        router.push('/chats');
+    });
+  }, []);
+
   function Login(credentials: Credentials){
-    console.log(JSON.stringify(credentials));
     AuthService.Login(credentials).then((response) => {
       if(response)
         router.push('/');      
       else
+        //TODO add notification
         console.log(credentials.login + 'already registered');          
     }); 
   }

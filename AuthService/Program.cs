@@ -1,13 +1,9 @@
-using AuthService.Misc;
+using AuthService.BuilderConfig;
 using AuthService.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using Persistence;
-using Shared.Misc;
-using System.Text;
+using Shared.BuilderConfig;
 
 namespace AuthService;
 
@@ -24,61 +20,19 @@ public class Program
             builder.Logging.ClearProviders();
             builder.Host.UseNLog();
 
-            builder.Services
-                .AddControllers()
-                .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
-
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            builder.Services.AddSingleton<AppSettings>();
-            builder.Services.AddScoped<AuthenticateService>();
-            builder.Services.AddScoped<TokenService>();
-
+            builder.Services.AddSharedServices();
+            builder.Services.AddSharedAuthServices(builder.Configuration);
             builder.Services.AddPersistence(builder.Configuration);
 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowReactApp",
-                builder => builder
-                   .WithOrigins("http://localhost:3000", "https://localhost:3000")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials());
-            });
+            builder.Services.AddControllers()
+                  .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-            builder.Services.AddAuthentication()
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
-                    ValidAudience = builder.Configuration["Jwt:Audience"]!,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-                };
-            });
-
-            builder.Services.AddAuthorization();
+            builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<AuthenticateService>();
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseCors("AllowReactApp");
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllers();
+            app.AddCommonMiddleware();
 
             app.Run();
         }

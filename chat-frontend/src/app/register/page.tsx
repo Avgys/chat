@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { Credentials } from "@/types/Credentials"
+import { Credentials } from "@/Models/Credentials"
 import LoginForm from "@/components/ui/loginForm";
 import { useRouter } from "next/navigation"
 import { AuthService } from "@/ApiServices/AuthService/AuthService";
@@ -15,7 +15,8 @@ export default function RegisterPageComponent() {
     AuthService.Register(credentials).then((response) => {
       if(response)
         router.push('/login');      
-      else
+      else      
+        //TODO add notification
         console.log(credentials.login + 'already registered');          
     });    
   }

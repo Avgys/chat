@@ -1,7 +1,6 @@
-import { Credentials, CredentialsModel } from "@/types/Credentials";
+import { Credentials, CredentialsModel } from "@/Models/Credentials";
 import { ApiService } from "../ApiService";
 import URLConsts from "@/URLConsts";
-import { time } from "console";
 
 export class AuthService {
 
@@ -9,35 +8,21 @@ export class AuthService {
     private static TokenInfo: Token | null = null;
     private static lastTimer: NodeJS.Timeout | null = null;
 
-    static AuthHeader = new Headers({
-        'Authorization': 'Bearer'
-    });
+    static AuthHeader = { header: 'Authorization', bearer: '' };
 
-    static GetFilledHeader() {
-        const token = this.getToken();
-        if (token == null)
+    static getAuthHeader() {
+        return this.AuthHeader;
+    }
+
+    private static async GetNewAccessToken() {
+        return await ApiService.GET<{ token: string }>(URLConsts.REFRESH_PATH);
+    }
+
+    public static async Login(credentials: Credentials): Promise<LoginResponse | null> {
+        const responseSalt = await ApiService.GET<{ salt: string }>(URLConsts.SALT_PATH + '/?name=' + credentials.login);
+
+        if (!responseSalt)
             return null;
-
-        const headers = new Headers(this.AuthHeader);
-        headers.set('Authorization', 'Bearer ' + token)
-
-        return headers;
-    }
-
-    public static async RefreshToken() {
-        const response = await ApiService.GET(URLConsts.REFRESH_API);
-
-        if (response != null) {
-            this.setToken(response.token);
-            this.TokenInfo = this.decodeToken(response.token);
-            this.startAutoUpdate(this.TokenInfo!);
-        }
-
-        return response;
-    }
-
-    public static async Login(credentials: Credentials) {
-        const responseSalt = await ApiService.GET(URLConsts.SALT_API + '/?name=' + credentials.login);
 
         const passwordHash = this.hashPassword(credentials.password, responseSalt.salt);
         const payload: CredentialsModel = {
@@ -46,7 +31,7 @@ export class AuthService {
             ClientSalt: responseSalt.salt
         };
 
-        const response: LoginResponse = await ApiService.POST(URLConsts.LOGIN_API, payload);
+        const response = await ApiService.POST<LoginResponse>(URLConsts.LOGIN_PATH, payload);
 
         if (response != null)
             this.setToken(response.token);
@@ -54,9 +39,14 @@ export class AuthService {
         return response;
     }
 
-    public static async Register(credentials: Credentials): Promise<RegisterResponse> {
-        const responseSalt = await ApiService.GET(URLConsts.SALT_API);
+    public static async Register(credentials: Credentials): Promise<RegisterResponse | null> {
+        const responseSalt = await ApiService.GET<{ salt: string }>(URLConsts.SALT_PATH);
+
+        if (!responseSalt)
+            return null;
+
         const passwordHash = this.hashPassword(credentials.password, responseSalt.salt);
+
         const payload: CredentialsModel = {
             Name: credentials.login,
             ClientPasswordHash: passwordHash,
@@ -76,24 +66,13 @@ export class AuthService {
 
     static async getTokenInfo(): Promise<Token | null> {
 
-        this.checkTokenInfoExpiration();
-
-        if (!this.TokenInfo) {
-            const token = this.getToken();
-            if (token != null) {
-                this.TokenInfo = this.decodeToken(token!);
-                this.checkTokenInfoExpiration();
-            }
-
-            if (!this.TokenInfo) {
-                const response = await this.RefreshToken();
-
-                if (!response)
-                    return null;
-            }
+        if (!this.TokenInfo || this.IsTokenExpired()) {
+            const token = await this.RefreshToken();
+            if (token !== null)
+                this.TokenInfo = this.decodeToken(token);
         }
 
-        return this.TokenInfo!;
+        return this.TokenInfo;
     }
 
     static startAutoUpdate(token: Token) {
@@ -113,11 +92,14 @@ export class AuthService {
         }, timeDelay);
     }
 
-    static checkTokenInfoExpiration() {
+    static IsTokenExpired(): boolean {
         if (this.TokenInfo != null && this.TokenInfo.exp > this.UnixSecondsNow()) {
             localStorage.removeItem(this.TokenKey);
             this.TokenInfo = null;
+            return true;
         }
+
+        return false;
     }
 
     static decodeToken(encodedToken: string): Token | null {
@@ -138,11 +120,34 @@ export class AuthService {
 
     static UnixSecondsNow() { return Math.floor(Date.now() / 1000); }
 
-    static getToken() {
-        return localStorage.getItem(this.TokenKey);
+    static async RefreshToken(): Promise<string | null> {
+        const response = await this.GetNewAccessToken();
+
+        if (response) {
+            this.setToken(response.token);
+            this.TokenInfo = this.decodeToken(response.token);
+            //if (this.TokenInfo === null)
+                //setTimeout(this.RefreshToken, 0);
+
+            //this.startAutoUpdate(this.TokenInfo!);
+
+            return response.token;
+        }
+
+        return null;
+    }
+
+    static async getTokenAsync(): Promise<string | null> {
+        let token = localStorage.getItem(this.TokenKey);
+
+        if (!token || !this.IsTokenExpired())
+            token = (await this.RefreshToken());
+
+        return token;
     }
 
     static setToken(token: string) {
         localStorage.setItem(this.TokenKey, token);
+        this.AuthHeader.bearer = `Bearer ${token}`;
     }
 }
