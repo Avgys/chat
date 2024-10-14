@@ -2,10 +2,11 @@
 {
     public record struct ContactModel
     {
-        public int Id;
+        public int? UserId;
+        public int? ChatId;
         public string Name;
         public string AvatarSrc;
         public string LastMessage;
-        public string Time;
+        public DateTime Time;
     }
 }

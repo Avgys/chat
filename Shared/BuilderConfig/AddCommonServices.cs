@@ -44,7 +44,7 @@ namespace Shared.BuilderConfig
             return services;
         }
 
-        public static IApplicationBuilder AddCommonMiddleware(this WebApplication app)
+        public static IApplicationBuilder UseCommonMiddleware(this WebApplication app)
         {
             if (app.Environment.IsDevelopment())
             {

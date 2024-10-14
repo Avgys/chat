@@ -1,26 +1,29 @@
-﻿using chat_backend.Models;
+﻿using AuthService.Misc;
+using chat_backend.Models;
+using chat_backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Xml.Linq;
 
 namespace chat_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class Chats : ControllerBase
+    public class Chats(ChatService chatService) : ControllerBase
     {
-        private static ContactModel[] mockUsers =
-        {
-            new() { Id = 1, Name = "Alice", AvatarSrc = "/alice.jpg", LastMessage = "Hey, how are you?", Time = "10:00 AM" },
-            new() { Id = 2, Name = "Bob", AvatarSrc = "/bob.jpg", LastMessage = "See you later!", Time = "10:15 AM" },
-            new() { Id = 3, Name = "Charlie", AvatarSrc = "/charlie.jpg", LastMessage = "Let's meet up!", Time = "10:30 AM" }
-        };
+        private readonly ChatService _chatService = chatService;
 
-        [HttpGet]
-        public ActionResult<ContactModel[]> GetOpenChatsAsync([FromQuery] int count = 0, [FromQuery] int skip = 0)
+        [HttpGet("contacts/my")]
+        public ActionResult<ContactModel[]> GetOpenChatsAsync([FromQuery] int count = 20, [FromQuery] int skipCount = 0)
         {
-            return Ok(mockUsers);
+            var userId = int.Parse(HttpContext.User.Claims.FirstOrDefault(x => x.Type == AuthConsts.Claims.UserId)!.Value);
+            return Ok(_chatService.GetLastChats(userId, count, skipCount));
+        }
+
+        [HttpGet("contacts")]
+        public ActionResult<ContactModel[]> GetContactsByNameAsync([FromQuery] string nameFilter = "", [FromQuery] int count = 20, [FromQuery] int skipCount = 0)
+        {
+            return Ok(_chatService.GetContactsByName(nameFilter, count, skipCount));
         }
     }
 }

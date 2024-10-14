@@ -15,6 +15,7 @@ namespace Persistence.Migrations
             Create.Table("Chats")
                 .WithColumn("Id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("Name").AsString(64).NotNullable().WithDefaultValue("DefaultChatName")
+                .WithColumn("LastMessageId").AsInt32().Nullable()
                 .WithColumn("IsGroup").AsBoolean().NotNullable().WithDefaultValue(false);
 
             Create.Table("ChatToUser")
@@ -26,12 +27,17 @@ namespace Persistence.Migrations
             Create.PrimaryKey().OnTable("ChatToUser").Columns("ChatId", "UserId");
 
             Create.Table("Messages")
-                .WithColumn("Id").AsInt32().PrimaryKey().Identity()
+                .WithColumn("ChatId").AsInt32().NotNullable().ForeignKey("Chats", "Id").OnDeleteOrUpdate(Rule.Cascade)
+                .WithColumn("Id").AsInt32().Identity()
                 .WithColumn("Text").AsString(255).NotNullable()
                 .WithColumn("TimeStampUtc").AsDateTime().NotNullable()
-                .WithColumn("SenderId").AsInt32().NotNullable().ForeignKey("Users", "Id")
-                .WithColumn("ChatId").AsInt32().NotNullable().ForeignKey("Chats", "Id");
-                
+                .WithColumn("SenderId").AsInt32().NotNullable().ForeignKey("Users", "Id");
+
+            Create.PrimaryKey().OnTable("Messages").Columns("ChatId", "Id");
+
+            Create.ForeignKey()
+                .FromTable("Chats").ForeignColumns("Id", "LastMessageId")
+                .ToTable("Messages").PrimaryColumns("ChatId", "Id");
         }
 
         public override void Down()

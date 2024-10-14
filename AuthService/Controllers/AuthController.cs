@@ -70,7 +70,7 @@ public class AuthController(
         }
     }
 
-    [HttpGet("private/refresh")]
+    [HttpGet("refreshToken/refresh")]
     public async Task<IActionResult> RefreshToken()
     {
         try
@@ -98,7 +98,7 @@ public class AuthController(
     }
 
     [Authorize]
-    [HttpPost("private/logout")]
+    [HttpPost("refreshToken/logout")]
     public async Task<IActionResult> Logout()
     {
         if (!ModelState.IsValid)

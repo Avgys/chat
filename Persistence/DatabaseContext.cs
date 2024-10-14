@@ -3,7 +3,7 @@ using Persistence.Models;
 
 namespace Persistence
 {
-    public class DatabaseContext : DbContext
+    public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
     {
         public DbSet<Message> Messages { get; set; }
         public DbSet<Chat> Chats { get; set; }
@@ -13,26 +13,41 @@ namespace Persistence
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-        public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
-        {
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Chat>()
-                .HasMany(x => x.Messages)
-                .WithOne(x => x.Chat)
-                .HasForeignKey(x => x.ChatId);
+                .HasMany(c => c.Messages)
+                .WithOne(m => m.Chat)
+                .HasForeignKey(m => m.ChatId);
 
-            modelBuilder.Entity<Role>()
-                .HasMany<User>()
-                .WithOne(x => x.Role)
+            modelBuilder.Entity<Chat>()
+                .HasOne(x => x.LastMessage)
+                .WithOne()
+                .HasForeignKey<Chat>(x => new { x.Id, x.LastMessageId });
+
+            modelBuilder.Entity<Message>()
+                .HasKey(m => new { m.ChatId, m.Id });
+
+            modelBuilder.Entity<Message>()
+                .Property(m => m.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<User>(e =>
+            {
+                e.HasMany(x => x.Chats)
+                .WithMany(x => x.Users)
+                .UsingEntity<ChatToUser>(
+                r => r.HasOne(x=> x.Chat).WithMany().HasForeignKey(x => x.ChatId).HasPrincipalKey(x => x.Id),
+                l => l.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).HasPrincipalKey(x => x.Id));
+
+                e.HasOne(x => x.Role)
+                .WithMany()
                 .HasForeignKey(x => x.RoleId);
 
-            modelBuilder.Entity<User>()
-                .HasMany<RefreshToken>()
-                .WithOne(x => x.User)
+                e.HasMany<RefreshToken>()
+                .WithOne(x=>x.User)
                 .HasForeignKey(x => x.UserId);
+            });
         }
     }
 }

@@ -1,5 +1,6 @@
 using AuthService.BuilderConfig;
 using chat_backend.Hubs;
+using chat_backend.Services;
 using NLog;
 using NLog.Web;
 using Persistence;
@@ -24,11 +25,12 @@ namespace chat_backend
                 builder.Services.AddSharedAuthServices(builder.Configuration);
                 builder.Services.AddPersistence(builder.Configuration);
 
+                builder.Services.AddScoped<ChatService>();
                 builder.Services.AddSignalR();
 
                 var app = builder.Build();
 
-                app.AddCommonMiddleware();
+                app.UseCommonMiddleware();
                 app.MapHub<ChatHub>("/hubs/chat");
 
                 app.Run();

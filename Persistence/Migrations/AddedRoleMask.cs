@@ -18,8 +18,8 @@ namespace Persistence.Migrations
 
 
             Insert.IntoTable("Roles")
-                .Row(new { Name = Role.Client })
-                .Row(new { Name = Role.Admin });
+                .Row(new { Id = 1, Name = Role.Client })
+                .Row(new { Id = 2, Name = Role.Admin });
         }
 
         public override void Down()

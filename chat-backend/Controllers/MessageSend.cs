@@ -48,22 +48,23 @@ namespace chat_backend.Controllers
             var chat = dbContext.Chats
                 .Where(x => !x.IsGroup)
                 .Include(x => x.Users)
-                .Where(y => y.Users.Any(x => x.UserId == senderId) && y.Users.Any(x => x.UserId == receiverId)).SingleOrDefault();
+                .Where(y => y.Users.Any(x => x.Id == senderId) && y.Users.Any(x => x.Id == receiverId)).SingleOrDefault();
 
             if (chat == null)
             {
                 chat = new Chat { Name = senderId.ToString(), IsGroup = false };
                 await dbContext.AddAsync(chat);
+                await dbContext.SaveChangesAsync();
 
                 await dbContext.ChatToUser.AddAsync(new ChatToUser
                 {
-                    Chat = chat,
+                    ChatId = chat.Id,
                     UserId = senderId
                 });
 
                 await dbContext.ChatToUser.AddAsync(new ChatToUser
                 {
-                    Chat = chat,
+                    ChatId = chat.Id,
                     UserId = receiverId
                 });
             }

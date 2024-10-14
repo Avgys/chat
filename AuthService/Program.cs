@@ -32,7 +32,7 @@ public class Program
 
             var app = builder.Build();
 
-            app.AddCommonMiddleware();
+            app.UseCommonMiddleware();
 
             app.Run();
         }

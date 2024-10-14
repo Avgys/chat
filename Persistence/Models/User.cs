@@ -13,5 +13,7 @@ namespace Persistence.Models
 
         public int RoleId { get; set; }
         public Role Role { get; set; } = default!;
+
+        public ICollection<Chat> Chats { get; set; } = default!;
     }
 }
