@@ -6,8 +6,8 @@ public static class AuthConsts
     public const string AuthScheme = "AuthScheme";
     public const string RefreshToken = "RefreshToken";
 
-    public static readonly TimeSpan AccessExpire = TimeSpan.FromMinutes(10);
-    public static readonly TimeSpan RefreshExpire = TimeSpan.FromHours(12);
+    public static readonly TimeSpan AccessExpire = TimeSpan.FromDays(2);
+    public static readonly TimeSpan RefreshExpire = TimeSpan.FromDays(2);
 
     public static class Claims
     {

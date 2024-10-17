@@ -1,18 +1,7 @@
-"use client"
-
-import { AuthService } from "@/ApiServices/AuthService/AuthService";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    AuthService.isAuth().then(isAuth => {
-      const path = isAuth ? '/chats' : '/login';
-      router.push(path);
-    });
-  }, []);
-
+  
+  redirect('/chats');
   return <div className="app">Pending...</div>
 }

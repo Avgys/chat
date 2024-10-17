@@ -3,7 +3,6 @@ using AuthService.Models;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Persistence.Models;
 
 namespace AuthService.Controllers;
 
@@ -132,7 +131,7 @@ public class AuthController(
         Response.Cookies.Append(AuthConsts.RefreshToken, tokenId.ToString(), new CookieOptions()
         {
             MaxAge = AuthConsts.RefreshExpire,
-            Path = "/api/auth/private",
+            Path = "/api/auth/refreshToken",
             Secure = true,
             HttpOnly = true,
             SameSite = SameSiteMode.None

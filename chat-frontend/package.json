@@ -2,7 +2,6 @@
   "name": "frontend-chat",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://localhost:44325",
   "scripts": {
     "dev": "next dev --experimental-https",
     "build": "next build",
@@ -19,7 +18,7 @@
     "base-64": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "http-proxy-middleware": "^3.0.2",
+    "http-proxy-middleware": "^3.0.3",
     "lucide-react": "^0.439.0",
     "next": "14.2.6",
     "react": "^18",

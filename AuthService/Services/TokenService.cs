@@ -35,7 +35,7 @@ public class TokenService(DatabaseContext databaseContext, AppSettings appSettin
             issuer: jwtInfo.Issuer,
             audience: jwtInfo.Audience,            
             claims: claims,
-            expires: DateTime.Now.AddDays(10),
+            expires: DateTime.UtcNow.Add(AuthConsts.AccessExpire),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

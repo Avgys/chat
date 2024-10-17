@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Credentials } from "@/Models/Credentials";
 import { useForm } from "react-hook-form";
+import { ReactNode } from "react";
 
-export default function LoginForm({onSubmit, buttonText} : { onSubmit: (a: Credentials) => void, buttonText: string}){
+export default function LoginForm({children, onSubmit} : {children: Readonly<ReactNode>, onSubmit: (credentials: Credentials) => void}){
     const { register, handleSubmit, formState: { errors } } = useForm<Credentials>();
 
     function onFormSubmit(data: any){
@@ -32,7 +33,7 @@ export default function LoginForm({onSubmit, buttonText} : { onSubmit: (a: Crede
               {errors.password && <p>Password must be at least 10 characters long</p>}
             </div>           
             <Button type="submit" className="w-full">
-                {buttonText}
+                {children}
             </Button>
           </form>
     )

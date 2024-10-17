@@ -1,20 +1,19 @@
-import URLConsts from "@/URLConsts";
+
 import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { AuthService } from "../AuthService/AuthService";
+import { HUBS } from "@/env";
+import ENV from "@/env.urls";
 
 export class SignalService {
-    static async init() {
+    static async init(token: string) {
         console.log('initiating ws connection');
 
-        const token = await AuthService.getTokenAsync();
-        if (!token)
-            return false;
-
         const connection = new HubConnectionBuilder()
-            .withUrl(URLConsts.HUB_PATH, {
-                accessTokenFactory: () => token,
-                transport: HttpTransportType.WebSockets
-            })
+            .withUrl(ENV.BACKEND_URL + HUBS.HUB_PATH,        
+                {
+                    accessTokenFactory: () => AuthService.GetTokenAsync().then(token => token ?? ''),
+                    transport: HttpTransportType.WebSockets,
+                })
             .configureLogging(LogLevel.Information)
             .build();
 
@@ -37,10 +36,10 @@ export class SignalService {
         try {
             start();
         }
-        catch(e){
+        catch (e) {
             console.log(e);
         }
-        finally{
+        finally {
             return true;
         }
     }

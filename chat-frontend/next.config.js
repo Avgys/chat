@@ -1,9 +1,9 @@
 //TODO
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // React Strict Mode is off
+  reactStrictMode: false,
 }
 
 module.exports = nextConfig
