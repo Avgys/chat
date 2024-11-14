@@ -57,7 +57,7 @@ public class AuthController(
                 return Unauthorized("Wrong credentials");
 
             var newToken = await _tokenService.IssueRefreshTokenAsync(user);
-            IncludeRefreshTokenAsync(newToken);
+            IncludeRefreshToken(newToken);
             var token = _tokenService.IssueAccessToken(user);
 
             return Ok(new { token });
@@ -83,7 +83,7 @@ public class AuthController(
                 return Unauthorized("User not found");
 
             var newToken = await _tokenService.IssueRefreshTokenAsync(user, guidToken);
-            IncludeRefreshTokenAsync(newToken);
+            IncludeRefreshToken(newToken);
 
             var token = _tokenService.IssueAccessToken(user);
 
@@ -120,13 +120,33 @@ public class AuthController(
         }
     }
 
+    [Authorize]
+    [HttpDelete("delete")]
+    public async Task<IActionResult> Delete()
+    {
+        if (!ModelState.IsValid)
+            return BadRequest("No enough credentials");
+
+        try
+        {
+            var userId = int.Parse(User.Claims.Single(x => x.Type == AuthConsts.Claims.UserId).Value);
+            RemoveRefreshToken();
+            return await _authService.DeleteUser(userId) ? Ok() : NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return BadRequest("Error registering");
+        }
+    }
+
     private bool TryGetRefreshToken(out Guid guidToken)
     {
         guidToken = Guid.Empty;
         return Request.Cookies.TryGetValue(AuthConsts.RefreshToken, out var refreshToken) && Guid.TryParse(refreshToken, out guidToken);
     }
 
-    private void IncludeRefreshTokenAsync(Guid tokenId)
+    private void IncludeRefreshToken(Guid tokenId)
     {
         Response.Cookies.Append(AuthConsts.RefreshToken, tokenId.ToString(), new CookieOptions()
         {
@@ -138,26 +158,15 @@ public class AuthController(
         });
     }
 
-    [Authorize]
-    [HttpDelete("delete")]
-    public async Task<IActionResult> Delete()
+    private void RemoveRefreshToken()
     {
-        if (!ModelState.IsValid)
-            return BadRequest("No enough credentials");
-
-        try
+        Response.Cookies.Append(AuthConsts.RefreshToken, "", new CookieOptions()
         {
-            var userIdStr = User.Claims.FirstOrDefault(x => x.Type == AuthConsts.Claims.UserId)?.Value;
-
-            if (int.TryParse(userIdStr, out var userId))
-                return await _authService.DeleteUser(userId) ? Ok() : NotFound();
-            else
-                return Unauthorized("Wrong user bearer");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return BadRequest("Error registering");
-        }
+            MaxAge = TimeSpan.Zero,
+            Path = "/api/auth/refreshToken",
+            Secure = true,
+            HttpOnly = true,
+            SameSite = SameSiteMode.None
+        });
     }
 }

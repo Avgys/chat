@@ -1,10 +1,16 @@
+'use client'
+
 import AuthComponent from "@/components/AuthComponent";
+// import ReduxProvider from "@/store/ProviderComponent";
+import store from "@/store/store";
+import { Provider } from "react-redux";
 
-
-export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
+export default function ChatLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
     return (
         <AuthComponent mustBeAuth={true}>
-            {children}
+            <Provider store={store}>
+                {children}
+            </Provider>
         </AuthComponent>
     );
 }

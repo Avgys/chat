@@ -1,7 +1,15 @@
 export type Contact = {
-    Id: number
-    Name: string
-    AvatarSrc: string
-    LastMessage: string
-    Time: string
-  }
+  UserId: number | null,
+  ChatId: number | null,
+  Name: string,
+  AvatarSrc: string,
+  LastMessage?: string,
+  LastMessageUTC?: string,
+  IsStranger: boolean
+}
+
+export function FixContactType(contact: Contact) {
+    contact.AvatarSrc = 'face.jpeg'
+    // if (contact.LastMessageUTC)
+    //     contact.LastMessageUTC = new Date(contact.LastMessageUTC);
+}   

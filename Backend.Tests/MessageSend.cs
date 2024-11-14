@@ -55,7 +55,7 @@ namespace Backend.Tests
             var chat = dbContext.Chats
                .Where(x => !x.IsGroup)
                .Include(x => x.Users)
-               .Where(y => y.Users.Any(x => x.UserId == _testUser1.Id) && y.Users.Any(x => x.UserId == _testUser2.Id))
+               .Where(y => y.Users.Any(x => x.Id == _testUser1.Id) && y.Users.Any(x => x.Id == _testUser2.Id))
                .Include(x => x.Messages)
                .Single();
             

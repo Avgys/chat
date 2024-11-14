@@ -26,7 +26,7 @@ namespace Persistence
         {
             services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb
-                .AddPostgres()
+                .AddPostgres11_0()
                 .WithGlobalConnectionString(configuration.GetConnectionString("ConnectionDbPath"))
                 .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations().For.EmbeddedResources())
                 .AddLogging(lb => lb.AddFluentMigratorConsole());

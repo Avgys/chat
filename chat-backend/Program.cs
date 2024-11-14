@@ -1,10 +1,16 @@
+using chat_backend.HostedServices;
 using chat_backend.Hubs;
+using chat_backend.Models.RedisModels;
 using chat_backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using Persistence;
+using Persistence.Models;
+using Redis.OM;
+using Redis.OM.Contracts;
+using Redis.OM.Searching;
 using Shared.BuilderConfig;
 using System.Text;
 
@@ -58,7 +64,20 @@ namespace chat_backend
                });
 
                 builder.Services.AddAuthorization();
-                builder.Services.AddSignalR();
+
+                builder.Services.AddSignalR()
+                    .AddJsonProtocol(options =>
+                    {
+                        options.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
+                        options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+                    });
+
+                //Redis services
+                builder.Services.AddHostedService<IndexCreationService>();
+                builder.Services.AddSingleton(new RedisConnectionProvider(builder.Configuration.GetConnectionString("Redis")!));
+                builder.Services.AddScoped(typeof(IRedisCollection<RedisUser>), s => s.GetRequiredService<RedisConnectionProvider>().RedisCollection<RedisUser>());
+                builder.Services.AddScoped(typeof(IRedisCollection<RedisChat>), s => s.GetRequiredService<RedisConnectionProvider>().RedisCollection<RedisChat>());
+
 
                 var app = builder.Build();
 

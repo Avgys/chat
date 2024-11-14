@@ -1,7 +1,9 @@
-﻿namespace chat_backend.Hubs.Clients
+﻿using chat_backend.Models;
+
+namespace chat_backend.Hubs.Clients
 {
     public interface IChatClient
     {
-        public Task ReceiveMessage(string sender, string message);
+        public Task ReceiveMessageAsync(ChatMessageModel messageModel);
     }
 }

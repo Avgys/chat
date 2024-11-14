@@ -3,7 +3,9 @@ import { ApiService } from "../ApiService";
 import { Auth } from "@/env";
 
 export class AuthService {
-    private static TokenKey: string = 'token';
+    private static readonly  TokenKey: string = 'token';
+    public static UpdateCallbacks: ((token: string | null) => void)[] = [];
+
     private static TokenInfo: Token | null = null;
     private static lastTimer: NodeJS.Timeout | null = null;
 
@@ -50,7 +52,7 @@ export class AuthService {
     }
 
     static async IsAuth(): Promise<Token | null> {
-        const token = await this.GetTokenInfo();
+        const token = await this.GetTokenInfoAsync();
         return token;
     }
 
@@ -58,7 +60,7 @@ export class AuthService {
         return password + salt;
     }
 
-    static async GetTokenInfo(): Promise<Token | null> {
+    static async GetTokenInfoAsync(): Promise<Token | null> {
 
         if (!this.TokenInfo) {
             const token = await this.GetTokenAsync();
@@ -122,8 +124,8 @@ export class AuthService {
             this.TokenInfo = this.DecodeToken(response.token);
             if (this.TokenInfo === null)
                 setTimeout(this.RefreshToken, 0);
-
-            this.StartAutoUpdate(this.TokenInfo!);
+            else
+                this.StartAutoUpdate(this.TokenInfo!);
 
             return response.token;
         }
@@ -135,7 +137,7 @@ export class AuthService {
         let token = localStorage.getItem(this.TokenKey);
 
         if (!token || this.IsTokenExpired()) {
-            token = (await this.RefreshToken());
+            token = await this.RefreshToken();
         }
 
         return token;
@@ -143,6 +145,7 @@ export class AuthService {
 
     static SetToken(token: string) {
         localStorage.setItem(this.TokenKey, token);
+        this.InvokeTokenUpdate(token);
     }
 
     static async TryGetBearerHeader(url: string): Promise<{ header: string, value: string } | null> {
@@ -157,6 +160,10 @@ export class AuthService {
     static GetCookieMode(url: string): CredentialsMode {
         const pathExists = IncludeRefreshCookieMatch.some(x => url.startsWith(x));
         return pathExists ? 'include' : 'omit';
+    }
+
+    static InvokeTokenUpdate(token: string | null) {
+        this.UpdateCallbacks.forEach(element => element.call(null, token));
     }
 }
 

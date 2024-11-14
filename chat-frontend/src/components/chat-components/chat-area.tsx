@@ -1,36 +1,71 @@
 'use client'
 
-import { Contact } from "@/Models/Contact";
-import { useEffect, useState } from 'react'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { SignalService } from "@/ApiServices/SignalService/SignalService"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Send } from "lucide-react"
-import ContactList from './contact-list'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { FormatStringDate } from '@/Models/FormatStringDate'
+import { ChatMessage } from "@/Models/Message"
+import { useAppSelector } from '@/store/hooks'
+import { selectCurrentChat } from '@/store/slice'
+import { Send } from "lucide-react"
+import { useContext, useEffect, useRef, useState } from 'react'
+import { AuthContext } from "../AuthComponent"
 
-function ChatArea({ selectedContact }: { selectedContact: Contact | null }) {
+
+function ChatArea() {
   const [message, setMessage] = useState("");
+  const messageEndRef = useRef<HTMLSpanElement>();
+
+  const selectedChat = useAppSelector(x => selectCurrentChat(x.chatState));
+
+  const messages = selectedChat?.messages ?? [];
+
+  const { tokenInfo } = useContext(AuthContext);
+  const currentUserId = tokenInfo!.UserId;
+
+  useEffect(() => { messageEndRef.current && messageEndRef.current!.scrollIntoView(); }, [selectedChat?.messages]);
+
+  function SendMessage(messageText: string) {
+    if (selectedChat == null)
+      return;
+
+    if (selectedChat.contact.ChatId != null) {
+      SignalService.SendMessage(messageText, selectedChat.contact.ChatId, true).then(isSuccess => {
+        messageEndRef.current!.scrollIntoView();
+      });
+    }
+    else if (selectedChat.contact.UserId != null) {
+      SignalService.SendMessage(messageText, selectedChat.contact.UserId, false).then(ChatId => {
+        messageEndRef.current!.scrollIntoView();
+      });
+    }
+  }
 
   return (<>
     <div className="flex-1 flex flex-col bg-gray-900">
-      {selectedContact ? (
+      {selectedChat ? (
         <>
           <div className="p-4 border-b border-gray-700 flex items-center">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={selectedContact.AvatarSrc} alt={selectedContact.Name} />
-              <AvatarFallback>{selectedContact.Name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              <AvatarImage src={selectedChat.contact.AvatarSrc} alt={selectedChat.contact.Name} />
+              <AvatarFallback>{selectedChat.contact.Name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
-            <h2 className="ml-4 font-semibold text-gray-100">{selectedContact.Name}</h2>
+            <h2 className="ml-4 font-semibold text-gray-100">{selectedChat.contact.Name}</h2>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {/* Chat messages would go here */}
-            <div className="text-center text-gray-400 my-4">
-              This is the beginning of your conversation with {selectedContact.Name}
-            </div>
+            {messages.length > 0
+              ? <>{messages
+                .map((x, i) => <MessageComponent key={i} message={x} isSender={x.SenderId == currentUserId} />)}</>
+              : (<div className="text-center text-gray-400 my-4">
+                This is the beginning of your conversation with {selectedChat.contact.Name}
+              </div>)
+            }
+            <span ref={messageEndRef} />
           </ScrollArea>
           <div className="p-4 border-t border-gray-700">
-            <form onSubmit={(e) => { e.preventDefault(); /* Handle message send */ }} className="flex items-center">
+            <form onSubmit={(e) => { e.preventDefault(); SendMessage(message) }} className="flex items-center">
               <Input
                 type="text"
                 placeholder="Type a message"
@@ -38,7 +73,7 @@ function ChatArea({ selectedContact }: { selectedContact: Contact | null }) {
                 onChange={(e) => setMessage(e.target.value)}
                 className="flex-1 mr-2 bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400"
               />
-              <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
+              <Button disabled={selectedChat === null} type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>
               </Button>
@@ -50,8 +85,25 @@ function ChatArea({ selectedContact }: { selectedContact: Contact | null }) {
           Select a contact to start chatting
         </div>
       )}
-    </div>
+    </div >
   </>);
+}
+
+function MessageComponent({ message, isSender }: { message: ChatMessage, isSender: boolean }) {
+  return <div
+    key={message.Id}
+    className={`flex ${isSender ? 'justify-end' : 'justify-start'} my-5`}>
+    <div
+      className={`max-w-[70%] rounded-lg p-3 ${isSender
+        ? 'bg-blue-500 text-white rounded-br-none'
+        : 'bg-blue-300 text-gray-800 rounded-bl-none'
+        }`}>
+      <p>{message.Text}</p>
+      <p className={`text-xs mt-1 ${isSender ? 'text-blue-100' : 'text-gray-500'}`}>
+        {FormatStringDate(message.TimeStampUtc, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'long' })}
+      </p>
+    </div>
+  </div>
 }
 
 export default ChatArea;

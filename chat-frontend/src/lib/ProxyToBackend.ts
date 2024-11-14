@@ -8,7 +8,7 @@ export async function ProxyToBackend(request: NextRequest, ...matches: Match[]):
     if (!match)
         return null;
 
-    const url = new URL(request.nextUrl.pathname, match.redirectUrl);
+    const url = new URL(request.nextUrl.pathname + '?' + request.nextUrl.searchParams, match.redirectUrl);
     console.log(url.toString(), request.method, request.mode, JSON.stringify(request.body), request.credentials);
 
     try {
@@ -16,6 +16,7 @@ export async function ProxyToBackend(request: NextRequest, ...matches: Match[]):
             method: request.method,
             headers: request.headers,
             mode: request.mode,
+            
         };
 
         if (request.body) {

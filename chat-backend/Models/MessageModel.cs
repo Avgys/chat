@@ -1,15 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace chat_backend.Models
+﻿namespace chat_backend.Models
 {
-    public class MessageModel
+    public record MessageBase
     {
-        [Required]
-        public int SenderId { get; set; }
-        [Required]
-        public int CliendId { get; set; }
-        [Required]
-        [StringLength(256, MinimumLength = 1)]
-        public string MessageText { get; set; } = string.Empty;
+        public int? Id { get; set; }
+        public int? SenderId { get; set; }
+        public string Text { get; set; } = default!;
+        public DateTime TimeStampUtc { get; set; }
+    }
+
+    public record DirectMessageModel : MessageBase
+    {
+        public int ReceiverId { get; set; } = default!;
+    }
+
+    public record ChatMessageModel : MessageBase
+    {
+        public int ChatId { get; set; } = default!;
     }
 }
