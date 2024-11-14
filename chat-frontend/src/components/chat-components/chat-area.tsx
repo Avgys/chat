@@ -10,13 +10,13 @@ import { ChatMessage } from "@/Models/Message"
 import { useAppSelector } from '@/store/hooks'
 import { selectCurrentChat } from '@/store/slice'
 import { Send } from "lucide-react"
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { AuthContext } from "../AuthComponent"
 
 
 function ChatArea() {
   const [message, setMessage] = useState("");
-  const messageEndRef = useRef<HTMLSpanElement>();
+  const messageEndRef = useRef<HTMLSpanElement>(null);
 
   const selectedChat = useAppSelector(x => selectCurrentChat(x.chatState));
 
@@ -31,17 +31,26 @@ function ChatArea() {
     if (selectedChat == null)
       return;
 
-    if (selectedChat.contact.ChatId != null) {
-      SignalService.SendMessage(messageText, selectedChat.contact.ChatId, true).then(isSuccess => {
-        messageEndRef.current!.scrollIntoView();
-      });
-    }
-    else if (selectedChat.contact.UserId != null) {
-      SignalService.SendMessage(messageText, selectedChat.contact.UserId, false).then(ChatId => {
+    const receiverId = selectedChat.contact.ChatId ?? selectedChat.contact.UserId;
+    const isReceiverChat = selectedChat.contact.ChatId != null;
+
+    if (receiverId != null) {
+      SignalService.SendMessage(messageText, receiverId, isReceiverChat).then(ChatId => {
         messageEndRef.current!.scrollIntoView();
       });
     }
   }
+
+  const messagesToShow = useMemo(() => {
+    return messages.length > 0
+      ? <>
+        {messages.map((x, i) => <MessageComponent key={i} message={x} isSender={x.SenderId == currentUserId} />)}
+      </>
+      : <div className="text-center text-gray-400 my-4">
+        This is the beginning of your conversation with {selectedChat?.contact.Name}
+      </div>
+  }, [messages]);
+
 
   return (<>
     <div className="flex-1 flex flex-col bg-gray-900">
@@ -55,13 +64,7 @@ function ChatArea() {
             <h2 className="ml-4 font-semibold text-gray-100">{selectedChat.contact.Name}</h2>
           </div>
           <ScrollArea className="flex-1 p-4">
-            {messages.length > 0
-              ? <>{messages
-                .map((x, i) => <MessageComponent key={i} message={x} isSender={x.SenderId == currentUserId} />)}</>
-              : (<div className="text-center text-gray-400 my-4">
-                This is the beginning of your conversation with {selectedChat.contact.Name}
-              </div>)
-            }
+            {messagesToShow}
             <span ref={messageEndRef} />
           </ScrollArea>
           <div className="p-4 border-t border-gray-700">

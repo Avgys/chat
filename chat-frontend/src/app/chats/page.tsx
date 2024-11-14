@@ -7,7 +7,7 @@ import ChatArea from "@/components/chat-components/chat-area";
 import ContactList from "@/components/chat-components/contact-list";
 import { Chat } from "@/Models/Chat";
 import { ChatMessage } from "@/Models/Message";
-import { useAppDispatch, useAppStore } from "@/store/hooks";
+import { useAppStore } from "@/store/hooks";
 import { addChats, addMessage, updateOrAddChat } from "@/store/slice";
 import { useContext, useEffect, useState } from "react";
 
@@ -16,14 +16,13 @@ export default function ChatComponent() {
   const [initiated, setInitiated] = useState(true);
 
   const store = useAppStore();
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (isAuth) {
       const tasks = [
         ChatService.loadContacts().then((contacts) => {
           const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
-          dispatch(addChats(newChats))
+          store.dispatch(addChats(newChats))
         }),
         SignalService.Init()];
 
@@ -41,31 +40,14 @@ export default function ChatComponent() {
     let cachedChat = chats.find(x => x.contact.ChatId == newMessage.ChatId);
 
     if (!cachedChat?.messages) {
-      const loadedChat = (await ChatService.LoadChat(newMessage.ChatId))!;
-      dispatch(updateOrAddChat(loadedChat));
+      const loadedChat = await ChatService.LoadChat(newMessage.ChatId);
+      store.dispatch(updateOrAddChat(loadedChat));
     }
     else {
-      dispatch(addMessage(newMessage));
-
-      //TODO OPTIMIES AND DECIDE TO LOAD FULL CHAT OR ONLY ADD CONTACT
-      //   if (cachedChat == selectedChat) {
-      //     cachedChat!.messages = [newMessage];
-      //     ChatService.LoadParticipantsInChat(newMessage.ChatId).then(participants => cachedChat!.participants = participants);
-      //   }
-
-      // }
-      // else {
-      //   cachedChat = {
-      //     contact: loadedChat,
-      //     messages: null,
-      //     participants: null
-      //   }
-
-      // }
+      store.dispatch(addMessage(newMessage));
+      //TODO OPTIMIES AND DECIDE TO LOAD FULL CHAT OR ONLY ADD CONTACT      
     }
   }
-
-
 
   return (
     <main className="justify-center">

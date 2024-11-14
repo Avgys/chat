@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "./input";
 
 function SearchInput({ onInput }: { onInput: (value: string) => void }) {
     return (<div className="p-4 border-b border-gray-700">

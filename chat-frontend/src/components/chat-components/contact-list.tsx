@@ -1,14 +1,14 @@
 'use client'
 
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useEffect, useMemo, useState } from "react";
-import { Chat } from "@/Models/Chat";
 import { ChatService } from "@/ApiServices/ChatService/ChatService";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { addChats as addChats, selectChat, selectCurrentChat, updateOrAddChat } from "@/store/slice";
-import SearchInput from "./search-input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Chat } from "@/Models/Chat";
 import { FormatStringDate } from "@/Models/FormatStringDate";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { addChats, selectChat, selectCurrentChat, updateOrAddChat } from "@/store/slice";
+import { useMemo, useState } from "react";
+import SearchInput from "../ui/search-input";
 
 function ContactList() {
     const [contactsFilter, setContactsFilter] = useState<string>('');
@@ -35,16 +35,21 @@ function ContactList() {
     function searchUsers(nameFilter: string) {
         let newFilter = isEmptyOrSpaces(nameFilter) ? '' : nameFilter;
 
-        if (newFilter != contactsFilter) {
-            setContactsFilter(newFilter);
-            if (!usedSearches.includes(newFilter)) {
-                setUsedSearches([...usedSearches, newFilter]);
-                ChatService.loadContacts(newFilter).then((contacts) => {
-                    const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
-                    dispatch(addChats(newChats))
-                })
-            }
-        }
+        if (newFilter == contactsFilter)
+            return;
+
+        setContactsFilter(newFilter);
+
+        if (usedSearches.includes(newFilter))
+            return;
+
+        setUsedSearches([...usedSearches, newFilter]);
+
+        ChatService.loadContacts(newFilter).then((contacts) => {
+            const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
+            dispatch(addChats(newChats))
+        })
+
     }
 
     const contactsToShow = useMemo(() => {

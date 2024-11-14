@@ -42,7 +42,7 @@ export const chatSlice = createSlice({
         },
         updateOrAddChat: (state, action: PayloadAction<Chat>) => {
             const newChat = action.payload;
-            newChat.messages?.sort((a, b) => a.Id - b.Id);
+            newChat.messages?.sort((a, b) => a.Id! - b.Id!);
             const indx = findChatIndex(state.chats, newChat);
 
             if (indx != -1)
