@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using NLog.Web;
 using System.Reflection;
 
 namespace Persistence
@@ -29,14 +31,17 @@ namespace Persistence
                 .AddPostgres11_0()
                 .WithGlobalConnectionString(configuration.GetConnectionString("ConnectionDbPath"))
                 .ScanIn(Assembly.GetExecutingAssembly()).For.Migrations().For.EmbeddedResources())
-                .AddLogging(lb => lb.AddFluentMigratorConsole());
+                .AddLogging(lb => lb.AddFluentMigratorConsole())
+                .AddLogging(lb => lb.AddNLog());
 
             using var scope = services.BuildServiceProvider(false).CreateScope();
-            
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Migration>>();
+
             var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+            logger.LogInformation("This is connection string: " +configuration.GetConnectionString("ConnectionDbPath"));
+
             runner.MigrateUp();
 
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Migration>>();
             logger.LogInformation("Migrations delivered successfully");
 
             return services;

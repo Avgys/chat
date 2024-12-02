@@ -1,0 +1,219 @@
+2024-11-20 18:10:29.2328 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-20 18:10:29.2328 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-20 18:10:29.2432 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-20 18:10:29.2432 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-20 18:10:29.2630 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-20 18:10:29.2728 Info Configuration initialized.
+2024-11-20 18:10:29.9734 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 09:58:35.8693 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 09:58:35.8871 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 09:58:35.8899 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 09:58:35.8899 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 09:58:35.9215 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 09:58:35.9382 Info Configuration initialized.
+2024-11-21 09:58:37.0672 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:01:56.6743 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 10:01:56.6846 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 10:01:56.6846 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 10:01:56.6925 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 10:01:56.7088 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:01:56.7191 Info Configuration initialized.
+2024-11-21 10:01:57.0583 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:05:51.6349 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 10:05:51.6466 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 10:05:51.6466 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 10:05:51.6543 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 10:05:51.6645 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:05:51.6751 Info Configuration initialized.
+2024-11-21 10:05:52.3497 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:07:13.1017 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 10:07:13.1017 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 10:07:13.1124 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 10:07:13.1124 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 10:07:13.1292 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:07:13.1413 Info Configuration initialized.
+2024-11-21 10:07:13.3085 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:07:21.1097 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 10:07:21.1183 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 10:07:21.1183 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 10:07:21.1260 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 10:07:21.1363 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:07:21.1465 Info Configuration initialized.
+2024-11-21 10:07:21.3422 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:10:55.9142 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-21 10:10:55.9235 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-21 10:10:55.9235 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-21 10:10:55.9235 Info NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 5.3.4.2778. Product version: 5.3.4+73d83d3161d31288ca5c554cc50d27b6bed5f28b. GlobalAssemblyCache: False
+2024-11-21 10:10:55.9411 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-21 10:10:55.9524 Info Configuration initialized.
+2024-11-21 10:10:56.1303 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/bin/Debug/net8.0/nlog.config
+2024-11-22 12:56:23.3401 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 12:56:23.3506 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 12:56:23.3506 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 12:56:23.3572 Info Closing old configuration.
+2024-11-22 12:56:23.3707 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 12:56:23.3814 Info Configuration initialized.
+2024-11-22 12:58:03.8769 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 12:58:03.8841 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 12:58:03.8841 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 12:58:03.8841 Info Closing old configuration.
+2024-11-22 12:58:03.8984 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 12:58:03.9073 Info Configuration initialized.
+2024-11-22 13:00:22.3107 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:00:22.3179 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:00:22.3179 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:00:22.3179 Info Closing old configuration.
+2024-11-22 13:00:22.3339 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:00:22.3434 Info Configuration initialized.
+2024-11-22 13:04:23.4585 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:04:23.4665 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:04:23.4665 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:04:23.4724 Info Closing old configuration.
+2024-11-22 13:04:23.4840 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:04:23.4943 Info Configuration initialized.
+2024-11-22 13:13:18.0688 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:13:18.0688 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:13:18.0688 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:13:18.0819 Info Closing old configuration.
+2024-11-22 13:13:18.0905 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:13:18.0991 Info Configuration initialized.
+2024-11-22 13:18:47.2648 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:18:47.2648 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:18:47.2648 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:18:47.2777 Info Closing old configuration.
+2024-11-22 13:18:47.2860 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:18:47.2949 Info Configuration initialized.
+2024-11-22 13:38:20.9674 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:38:20.9674 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:38:20.9761 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:38:20.9761 Info Closing old configuration.
+2024-11-22 13:38:20.9883 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:38:20.9976 Info Configuration initialized.
+2024-11-22 13:39:34.5893 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:39:34.5963 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:39:34.5963 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:39:34.5963 Info Closing old configuration.
+2024-11-22 13:39:34.6110 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:39:34.6199 Info Configuration initialized.
+2024-11-22 13:39:59.6288 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:39:59.6362 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:39:59.6362 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:39:59.6420 Info Closing old configuration.
+2024-11-22 13:39:59.6420 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:39:59.6591 Info Configuration initialized.
+2024-11-22 13:40:18.1397 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:40:18.1470 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:40:18.1470 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:40:18.1529 Info Closing old configuration.
+2024-11-22 13:40:18.1611 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:40:18.1705 Info Configuration initialized.
+2024-11-22 13:41:24.6229 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:41:24.6297 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:41:24.6297 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:41:24.6297 Info Closing old configuration.
+2024-11-22 13:41:24.6438 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:41:24.6523 Info Configuration initialized.
+2024-11-22 13:50:02.1975 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 13:50:02.2050 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 13:50:02.2050 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 13:50:02.2106 Info Closing old configuration.
+2024-11-22 13:50:02.2189 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 13:50:02.2189 Info Configuration initialized.
+2024-11-22 14:07:08.7315 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:07:08.7388 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:07:08.7388 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:07:08.7388 Info Closing old configuration.
+2024-11-22 14:07:08.7536 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:07:08.7626 Info Configuration initialized.
+2024-11-22 14:08:11.1929 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:08:11.2003 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:08:11.2003 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:08:11.2063 Info Closing old configuration.
+2024-11-22 14:08:11.2063 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:08:11.2240 Info Configuration initialized.
+2024-11-22 14:53:06.7692 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:53:06.7761 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:53:06.7761 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:53:06.7761 Info Closing old configuration.
+2024-11-22 14:53:06.7900 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:53:06.7990 Info Configuration initialized.
+2024-11-22 14:53:48.1485 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:53:48.1558 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:53:48.1558 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:53:48.1558 Info Closing old configuration.
+2024-11-22 14:53:48.1705 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:53:48.1795 Info Configuration initialized.
+2024-11-22 14:54:39.7966 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:54:39.8036 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:54:39.8036 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:54:39.8036 Info Closing old configuration.
+2024-11-22 14:54:39.8181 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:54:39.8273 Info Configuration initialized.
+2024-11-22 14:56:03.8143 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:56:03.8221 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:56:03.8221 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:56:03.8221 Info Closing old configuration.
+2024-11-22 14:56:03.8367 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:56:03.8457 Info Configuration initialized.
+2024-11-22 14:56:15.2238 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:56:15.2315 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:56:15.2315 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:56:15.2315 Info Closing old configuration.
+2024-11-22 14:56:15.2461 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:56:15.2551 Info Configuration initialized.
+2024-11-22 14:58:21.2945 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-22 14:58:21.2945 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-22 14:58:21.2945 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-22 14:58:21.3077 Info Closing old configuration.
+2024-11-22 14:58:21.3162 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-22 14:58:21.3254 Info Configuration initialized.
+2024-11-25 14:25:37.7681 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:25:37.7776 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:25:37.7776 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:25:37.7776 Info Closing old configuration.
+2024-11-25 14:25:37.7962 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:25:37.8060 Info Configuration initialized.
+2024-11-25 14:27:08.1250 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:27:08.1250 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:27:08.1337 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:27:08.1337 Info Closing old configuration.
+2024-11-25 14:27:08.1463 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:27:08.1551 Info Configuration initialized.
+2024-11-25 14:27:20.7995 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:27:20.8068 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:27:20.8068 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:27:20.8120 Info Closing old configuration.
+2024-11-25 14:27:20.8120 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:27:20.8295 Info Configuration initialized.
+2024-11-25 14:28:08.7487 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:28:08.7560 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:28:08.7560 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:28:08.7619 Info Closing old configuration.
+2024-11-25 14:28:08.7619 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:28:08.7796 Info Configuration initialized.
+2024-11-25 14:29:25.2830 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:29:25.2905 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:29:25.2905 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:29:25.2905 Info Closing old configuration.
+2024-11-25 14:29:25.3049 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:29:25.3140 Info Configuration initialized.
+2024-11-25 14:32:34.8198 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:32:34.8198 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:32:34.8198 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:32:34.8332 Info Closing old configuration.
+2024-11-25 14:32:34.8419 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:32:34.8508 Info Configuration initialized.
+2024-11-25 14:32:35.1468 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:33:32.6532 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:33:32.6607 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:33:32.6607 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:33:32.6672 Info Closing old configuration.
+2024-11-25 14:33:32.6802 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:33:32.6907 Info Configuration initialized.
+2024-11-25 14:33:33.1207 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:41:03.7569 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2024-11-25 14:41:03.7647 Info Registered target NLog.Targets.FileTarget(Name=ownFile-web)
+2024-11-25 14:41:03.7647 Info Registered target NLog.Targets.ConsoleTarget(Name=lifetimeConsole)
+2024-11-25 14:41:03.7710 Info Closing old configuration.
+2024-11-25 14:41:03.7799 Info Validating config: TargetNames=allfile, lifetimeConsole, ownFile-web, ConfigItems=54, FilePath=/app/NLog.config
+2024-11-25 14:41:03.7892 Info Configuration initialized.

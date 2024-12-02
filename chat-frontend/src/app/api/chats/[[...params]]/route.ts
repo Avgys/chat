@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ENV from '@/env.urls'
+import Urls from '@/urls'
 import { Match, ProxyToBackend } from '@/lib/ProxyToBackend';
 
 async function handler(request: NextRequest) {
@@ -9,6 +9,6 @@ async function handler(request: NextRequest) {
     });
 }
 
-const match: Match = { path: '/api/chats', redirectUrl: ENV.BACKEND_URL };
+const match: Match = { path: '/api/chats', redirectUrl: Urls.BACKEND_URL };
 
 export { handler as GET, handler as POST }

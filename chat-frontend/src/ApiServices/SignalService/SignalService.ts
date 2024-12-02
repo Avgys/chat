@@ -1,8 +1,8 @@
 
 import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { AuthService } from "../AuthService/AuthService";
-import { HUBS } from "@/env";
-import ENV from "@/env.urls";
+import { HUBS } from "@/apiPaths";
+import Urls from "@/urls";
 import { ChatMessage } from "@/Models/Message";
 
 export class SignalService {
@@ -12,11 +12,14 @@ export class SignalService {
 
     static async Init() {
         console.log('initiating ws connection');
-
+        const token = await AuthService.GetTokenAsync();
+        console.log("Current token: ");
         this.CurrentConnection = new HubConnectionBuilder()
-            .withUrl(ENV.BACKEND_URL + HUBS.HUB_PATH,
+            .withUrl(Urls.SIGNAL_URL + HUBS.HUB_PATH,
                 {
                     accessTokenFactory: () => AuthService.GetTokenAsync().then(token => token ?? ''),
+                    skipNegotiation: true,
+                    withCredentials: true,
                     transport: HttpTransportType.WebSockets,
                 })
             .withAutomaticReconnect()

@@ -1,5 +1,4 @@
-﻿
-namespace AuthService.Misc;
+﻿namespace Auth.Shared.Misc;
 
 public static class AuthConsts
 {

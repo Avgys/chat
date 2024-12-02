@@ -7,9 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using Persistence;
-using Persistence.Models;
 using Redis.OM;
-using Redis.OM.Contracts;
 using Redis.OM.Searching;
 using Shared.BuilderConfig;
 using System.Text;
@@ -25,6 +23,10 @@ namespace chat_backend
             try
             {
                 var builder = WebApplication.CreateBuilder(args);
+
+                logger.Info("Enviromnet: " + builder.Environment.EnvironmentName);
+                var appsettingsFilename = $"appsettings.{builder.Environment.EnvironmentName}.json";
+                builder.Configuration.AddJsonFile(appsettingsFilename, optional: true, reloadOnChange: true);
 
                 builder.Logging.ClearProviders();
                 builder.Host.UseNLog();
@@ -82,7 +84,7 @@ namespace chat_backend
                 var app = builder.Build();
 
                 app.UseCommonMiddleware();
-                app.MapHub<ChatHub>("/api/hubs/chat");
+                app.MapHub<ChatHub>("/api/hubs/chat").RequireCors("AllowReactApp");
 
                 app.Run();
             }

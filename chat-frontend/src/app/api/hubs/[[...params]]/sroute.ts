@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ENV from '@/env.urls'
+import Urls from '@/urls'
 import { Match, ProxyToBackend } from '@/lib/ProxyToBackend';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -27,7 +27,7 @@ export function handler(req: NextApiRequest, res: NextApiResponse) {
     });
 }
 
-const match: Match = { path: '', redirectUrl: ENV.BACKEND_URL };
+const match: Match = { path: '', redirectUrl: Urls.BACKEND_URL };
 
 
 export const config = {

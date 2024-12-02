@@ -1,6 +1,6 @@
 import { Credentials, CredentialsModel } from "@/Models/Credentials";
 import { ApiService } from "../ApiService";
-import { Auth } from "@/env";
+import { Auth } from "@/apiPaths";
 
 export class AuthService {
     private static readonly  TokenKey: string = 'token';

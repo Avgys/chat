@@ -3,42 +3,74 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-backend", ".\chat-backend\chat-backend.csproj", "{16375CA4-0A3A-4487-84EC-6EA767414F52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-backend", "chat-backend\chat-backend.csproj", "{16375CA4-0A3A-4487-84EC-6EA767414F52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", ".\Persistence\Persistence.csproj", "{7AF0C649-62B6-49B0-AC31-19620BC4E94E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\Persistence.csproj", "{7AF0C649-62B6-49B0-AC31-19620BC4E94E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", ".\Shared\Shared.csproj", "{A793CF06-77E6-4401-A3CF-2ED566FB25DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{A793CF06-77E6-4401-A3CF-2ED566FB25DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend.Tests", ".\Backend.Tests\Backend.Tests.csproj", "{13B7CFBD-5981-4757-BCBE-FA7E561EC060}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend.Tests", "Backend.Tests\Backend.Tests.csproj", "{13B7CFBD-5981-4757-BCBE-FA7E561EC060}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", ".\AuthService\AuthService.csproj", "{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthService", "AuthService\AuthService.csproj", "{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.Shared", "Auth.Shared\Auth.Shared.csproj", "{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Docker|Any CPU = Docker|Any CPU
+		LocalDocker|Any CPU = LocalDocker|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Docker|Any CPU.ActiveCfg = Docker|Any CPU
+		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Docker|Any CPU.Build.0 = Docker|Any CPU
+		{16375CA4-0A3A-4487-84EC-6EA767414F52}.LocalDocker|Any CPU.ActiveCfg = LocalDocker|Any CPU
+		{16375CA4-0A3A-4487-84EC-6EA767414F52}.LocalDocker|Any CPU.Build.0 = LocalDocker|Any CPU
 		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16375CA4-0A3A-4487-84EC-6EA767414F52}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.LocalDocker|Any CPU.ActiveCfg = Docker|Any CPU
+		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.LocalDocker|Any CPU.Build.0 = Docker|Any CPU
 		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AF0C649-62B6-49B0-AC31-19620BC4E94E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.LocalDocker|Any CPU.ActiveCfg = Docker|Any CPU
+		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.LocalDocker|Any CPU.Build.0 = Docker|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A793CF06-77E6-4401-A3CF-2ED566FB25DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.LocalDocker|Any CPU.ActiveCfg = Docker|Any CPU
+		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.LocalDocker|Any CPU.Build.0 = Docker|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13B7CFBD-5981-4757-BCBE-FA7E561EC060}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.LocalDocker|Any CPU.ActiveCfg = LocalDocker|Any CPU
+		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.LocalDocker|Any CPU.Build.0 = LocalDocker|Any CPU
 		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.LocalDocker|Any CPU.ActiveCfg = Release|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.LocalDocker|Any CPU.Build.0 = Release|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

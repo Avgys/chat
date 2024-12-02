@@ -1,0 +1,74 @@
+services:
+  auth-service:
+    container_name: auth-service
+    build: 
+      context: .
+      dockerfile: ./AuthService/Dockerfile
+    ports:
+      - 34326:34321
+      - 44326:44321
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTPS_PORTS=44321
+      - ASPNETCORE_HTTP_PORTS=34321
+      - ASPNETCORE_URLS=https://+:44321;http://+:34321
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      - ~/.aspnet/https:/https:ro
+  chat-backend:
+    container_name: backend-chat
+    build: 
+      context: .
+      dockerfile: ./chat-backend/Dockerfile
+    ports:
+      - 34325:34325
+      - 44325:44325
+    depends_on:
+      - db
+      - redis
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTPS_PORTS=44325
+      - ASPNETCORE_HTTP_PORTS=34325
+      - ASPNETCORE_URLS=https://+:44325;http://+:34325
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      - ~/.aspnet/https:/https:ro
+      - C:/logs:/logs
+  chat-frontend:
+    container_name: frontend-chat
+    build:
+      context: ./chat-frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    links:
+     - auth-service
+     - chat-backend
+    environment:
+      - NEXT_PUBLIC_AUTH_URL=https://auth-service:44321
+      - NEXT_PUBLIC_BACKEND_URL=https://chat-backend:44325
+      - NEXT_PUBLIC_SIGNAL_URL=https://localhost:44325
+  db:
+    container_name: db-psql
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testDatabase
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  redis:
+    container_name: cache-redis
+    image: redis/redis-stack    
+    ports:
+      - 6379:6379
+      - 8001:8001
+volumes:
+  db_data:

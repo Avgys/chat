@@ -19,6 +19,9 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var appsettingsFilename = $"appsettings.{builder.Environment.EnvironmentName}.json";
+            builder.Configuration.AddJsonFile(appsettingsFilename, optional: true, reloadOnChange: true);
+            Console.WriteLine(appsettingsFilename);
             builder.Logging.ClearProviders();
             builder.Host.UseNLog();
 

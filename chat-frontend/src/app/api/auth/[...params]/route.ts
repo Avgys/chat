@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import ENV from '@/env.urls'
+import Urls from '@/urls'
 import { Match, ProxyToBackend } from '@/lib/ProxyToBackend';
 
 
@@ -10,6 +10,6 @@ async function handler(request: NextRequest) {
    });
 }
 
-const match: Match = { path: '/api/auth', redirectUrl: ENV.AUTH_URL };
+const match: Match = { path: '/api/auth', redirectUrl: Urls.AUTH_URL };
 
 export { handler as GET, handler as POST }

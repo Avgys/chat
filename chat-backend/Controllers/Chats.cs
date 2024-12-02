@@ -1,4 +1,5 @@
-﻿using AuthService.Misc;
+﻿
+using Auth.Shared.Misc;
 using chat_backend.Models;
 using chat_backend.Services;
 using Microsoft.AspNetCore.Authorization;

@@ -1,4 +1,4 @@
-﻿using AuthService.Misc;
+﻿using Auth.Shared.Misc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

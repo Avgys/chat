@@ -1,4 +1,4 @@
-﻿using AuthService.Misc;
+﻿using Auth.Shared.Misc;
 using AuthService.Models;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,12 +9,12 @@ namespace AuthService.Controllers;
 [Route("api/auth")]
 [ApiController]
 public class AuthController(
-    AuthenticateService _authService,
+    AuthenticateService authService,
     TokenService tokenService,
     ILogger<AuthController> logger) : ControllerBase
 {
     private const string AuthScheme = AuthConsts.AuthScheme;
-    private readonly AuthenticateService passwordService = _authService;
+    private readonly AuthenticateService passwordService = authService;
     private readonly TokenService _tokenService = tokenService;
     private readonly ILogger<AuthController> _logger = logger;
 
@@ -131,7 +131,7 @@ public class AuthController(
         {
             var userId = int.Parse(User.Claims.Single(x => x.Type == AuthConsts.Claims.UserId).Value);
             RemoveRefreshToken();
-            return await _authService.DeleteUser(userId) ? Ok() : NotFound();
+            return await passwordService.DeleteUser(userId) ? Ok() : NotFound();
         }
         catch (Exception ex)
         {

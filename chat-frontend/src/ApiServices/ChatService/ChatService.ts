@@ -1,4 +1,4 @@
-import { CHATS } from "@/env";
+import { CHATS } from "@/apiPaths";
 import { ApiService } from "../ApiService";
 import { Contact, FixContactType } from "@/Models/Contact";
 import { ChatMessage } from "@/Models/Message";

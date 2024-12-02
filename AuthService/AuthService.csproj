@@ -1,24 +1,55 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\chat-backend</DockerfileContext>
+    <UserSecretsId>48a5e1f0-c31c-413d-a4d8-a418a3720802</UserSecretsId>
+    <Configurations>Debug;Release;Docker;LocalDocker</Configurations>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.LocalDocker.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.LocalDocker.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="8.0.8" />
-    <PackageReference Include="NLog" Version="5.3.3" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.12" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="NLog" Version="5.3.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Auth.Shared\Auth.Shared.csproj" />
     <ProjectReference Include="..\Persistence\Persistence.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'AuthService'">
+    <!-- Include Development configuration -->
+    <Content Include="appsettings.Development.json" Condition="'$(Configuration)' == 'Development'" CopyToOutputDirectory="PreserveNewest" />
+    <Content Remove="appsettings.Development.json" Condition="'$(Configuration)' != 'Development'" CopyToOutputDirectory="PreserveNewest" />
+
+    <!-- Include Release configuration -->
+    <Content Include="appsettings.Release.json" Condition="'$(Configuration)' == 'Release'" CopyToOutputDirectory="PreserveNewest" />
+    <Content Remove="appsettings.Release.json" Condition="'$(Configuration)' != 'Release'" CopyToOutputDirectory="PreserveNewest" />
+
+    <!-- Include Docker configuration -->
+    <Content Include="appsettings.Docker.json" Condition="'$(Configuration)' == 'Docker'" CopyToOutputDirectory="PreserveNewest" />
+    <Content Remove="appsettings.Docker.json" Condition="'$(Configuration)' != 'Docker'" />
+
+    <!-- Include LocalDocker configuration -->
+    <Content Include="appsettings.LocalDocker.json" Condition="'$(Configuration)' == 'Docker'" CopyToOutputDirectory="PreserveNewest" />
+
+    <Content Update="nlog.config" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

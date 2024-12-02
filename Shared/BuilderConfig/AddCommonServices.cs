@@ -8,7 +8,7 @@ namespace Shared.BuilderConfig
     public static class CommonServices
     {
         private static string[] _allowedCorsHeaders = ["Authorization", "x-signalr-user-agent", "x-requested-with", "content-type"];
-        private static string[] _allowedClientOrigins = ["http://localhost:3000", "https://localhost:3000"];
+        private static string[] _allowedClientOrigins = ["http://localhost:3000", "https://localhost:3000", "http://localhost:3000", "https://localhost:3001"];
 
         public static IServiceCollection AddSharedServices(this IServiceCollection services)
         {
@@ -22,24 +22,20 @@ namespace Shared.BuilderConfig
             {
                 options.AddPolicy("AllowReactApp",
                 builder => builder
-                   .WithOrigins(_allowedClientOrigins)
-                   .WithMethods("GET", "POST")
-                   .WithHeaders(_allowedCorsHeaders)
-                   .AllowCredentials());
+                    .SetIsOriginAllowed(x => x.StartsWith("172"))
+                    .WithOrigins(_allowedClientOrigins)
+                    .WithMethods("GET", "POST")
+                    .WithHeaders(_allowedCorsHeaders)
+                    .AllowCredentials());
             });
 #endif
-            //Prevent controllers sharing between libraries
-            //services.AddControllers()
-            //    .PartManager.ApplicationParts.Clear();
-
-            //Include controllers only from start assembly
+            
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
                     options.JsonSerializerOptions.IncludeFields = true;
                 });
-            // .PartManager.ApplicationParts.Add(new AssemblyPart(Assembly.GetEntryAssembly()!));
 
             return services;
         }
