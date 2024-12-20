@@ -5,14 +5,17 @@ import { ChatMessage } from '@/Models/Message'
 
 interface ChatsState {
     chats: Chat[],
-    currentChatIndex?: number | undefined
+    currentChatIndex?: number | undefined,
+
+    currentCallChatIndex?: number | undefined,
+    localMediaStream?: MediaStream | undefined
 }
 
 const initialState: ChatsState = {
     chats: [],
 }
 
-export const chatSlice = createSlice({
+const chatSlice = createSlice({
     name: 'chat',
     // `createSlice` will infer the state type from the `initialState` argument
     initialState,
@@ -31,7 +34,7 @@ export const chatSlice = createSlice({
 
             chat!.contact = {
                 ...chat!.contact,
-                LastMessage: messsage.Text,
+                LastMessage: messsage.Content,
                 LastMessageUTC: messsage.TimeStampUtc
             };
         },
@@ -57,11 +60,26 @@ export const chatSlice = createSlice({
             const indx = findChatIndex(state.chats, chat);
             state.currentChatIndex = indx;
         },
+        selectCaller: (state, action: PayloadAction<Chat | null>) => {
+            const chat = action.payload;
+
+            if (!chat) {
+                state.currentCallChatIndex = undefined;
+                return;
+            }
+
+            const indx = findChatIndex(state.chats, chat);
+            state.currentCallChatIndex = indx;
+        },
     },
 })
 
-export function selectCurrentChat(state: ChatsState) {
+export function getCurrentChat(state: ChatsState) {
     return state.currentChatIndex !== undefined ? state.chats[state.currentChatIndex] : null;
+}
+
+export function getCurrentCallChat(state: ChatsState) {
+    return state.currentCallChatIndex !== undefined ? state.chats[state.currentCallChatIndex] : null;
 }
 
 function findChatIndex(chats: Chat[], chatToFind: Chat) {
@@ -69,7 +87,11 @@ function findChatIndex(chats: Chat[], chatToFind: Chat) {
         || x.contact.UserId && x.contact.UserId === chatToFind.contact.UserId);
 }
 
-export const { addMessage, addChats, updateOrAddChat, selectChat } = chatSlice.actions
+export function findChatById(state: ChatsState, chatId: number) {
+    return state.chats.find(x => x.contact.ChatId && x.contact.ChatId === chatId);
+}
+
+export const { addMessage, addChats, updateOrAddChat, selectChat, selectCaller } = chatSlice.actions
 
 export const selectCount = (state: RootState) => state.chatState
 

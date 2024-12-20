@@ -35,6 +35,7 @@ namespace chat_backend
                 builder.Services.AddPersistence(builder.Configuration);
 
                 builder.Services.AddScoped<ChatService>();
+                builder.Services.AddScoped<RedisService>();
                 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                .AddJwtBearer(options =>
                {

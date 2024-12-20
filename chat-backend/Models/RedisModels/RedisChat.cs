@@ -1,15 +1,16 @@
-﻿using Persistence.Models;
+﻿using Microsoft.OpenApi.Validations;
+using Persistence.Models;
 using Redis.OM.Modeling;
 
 namespace chat_backend.Models.RedisModels
 {
     [Document(StorageType = StorageType.Json)]
-    public class RedisChat
+    public class RedisChat : IChat
     {
         [RedisIdField]
         [Indexed] public int Id { get; set; } = default!;
         [Indexed] public bool IsGroup { get; set; }
-        [Indexed(CascadeDepth = 1)] public ChatParticipant[] Users { get; set; } = default!;
+        [Indexed(CascadeDepth = 1)] public ChatParticipant[] Participants { get; set; } = default!;
 
         public RedisChat() { }
 
@@ -17,22 +18,18 @@ namespace chat_backend.Models.RedisModels
         {
             Id = dbChat.Id;
             IsGroup = dbChat.IsGroup;
-            Users = dbChat.Users.Select(y => new ChatParticipant
+            Participants = dbChat.Users.Select(y => new ChatParticipant
             {
                 UserId = y.Id,
-                IsActive = false
+                IsActive = false,
             }).ToArray();
         }
 
-        public RedisChat(Chat dbChat, int firstInitiatorId)
+        public void UpdateParticipant(int userId, bool isActive)
         {
-            Id = dbChat.Id;
-            IsGroup = dbChat.IsGroup;
-            Users = dbChat.Users.Select(y => new ChatParticipant
-            {
-                UserId = y.Id,
-                IsActive = firstInitiatorId == y.Id
-            }).ToArray();
+            var user = Participants.SingleOrDefault(x => x.UserId == userId);
+            if (user != null)
+                user.IsActive = isActive;
         }
     }
 

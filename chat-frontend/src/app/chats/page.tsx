@@ -2,9 +2,12 @@
 
 import { ChatService } from "@/ApiServices/ChatService/ChatService";
 import { SignalService } from "@/ApiServices/SignalService/SignalService";
-import { AuthContext } from "@/components/AuthComponent";
+import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC";
+import { AuthContext } from "@/components/authComponent";
+import CallArea from "@/components/chat-components/call-area";
 import ChatArea from "@/components/chat-components/chat-area";
 import ContactList from "@/components/chat-components/contact-list";
+import { SelectedContact } from "@/components/chat-components/selected-contact";
 import { Chat } from "@/Models/Chat";
 import { ChatMessage } from "@/Models/Message";
 import { useAppStore } from "@/store/hooks";
@@ -24,12 +27,14 @@ export default function ChatComponent() {
           const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
           store.dispatch(addChats(newChats))
         }),
-        SignalService.Init()];
+        SignalService.connectToServer(),
+        WebRTCService.prepareService()
+      ];
 
       Promise.all(tasks).then(() => setInitiated(true));
 
-      SignalService.OnReceiveMessage.push(AddMessage);
-      return () => { SignalService.OnReceiveMessage.splice(SignalService.OnReceiveMessage.findIndex(x => x == AddMessage), 1); };
+      SignalService.onMessageReceive = AddMessage;
+      return () => { SignalService.onMessageReceive = null };
     }
   }, [isAuth]);
 
@@ -38,23 +43,23 @@ export default function ChatComponent() {
     const chats = store.getState().chatState.chats;
 
     let cachedChat = chats.find(x => x.contact.ChatId == newMessage.ChatId);
-
+    
     if (!cachedChat?.messages) {
       const loadedChat = await ChatService.LoadChat(newMessage.ChatId);
       store.dispatch(updateOrAddChat(loadedChat));
     }
     else {
       store.dispatch(addMessage(newMessage));
-      //TODO OPTIMIES AND DECIDE TO LOAD FULL CHAT OR ONLY ADD CONTACT      
+      //TODO OPTIMIZE AND DECIDE TO LOAD FULL CHAT OR ONLY ADD CONTACT      
     }
   }
 
   return (
     <main className="justify-center">
       {isAuth && initiated &&
-        <div className="flex h-screen bg-gray-900 text-gray-100">
+        <div className="flex bg-gray-900 text-gray-100">
           <ContactList />
-          <ChatArea />
+          <SelectedContact />
         </div>}
     </main>
   );

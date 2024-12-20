@@ -1,12 +1,18 @@
 ﻿using chat_backend.Models;
+using chat_backend.Models.RedisModels;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using Persistence.Models;
+using System.Linq.Expressions;
 
 namespace chat_backend.Services
 {
-    public class ChatService(DatabaseContext dbContext)
+    public class ChatService(DatabaseContext dbContext, RedisService redisService)
     {
         private readonly DatabaseContext _dbContext = dbContext;
+        private readonly RedisService _redisService = redisService;
+
+        public RedisService Online { get => _redisService; }
 
         public async Task<IEnumerable<ContactModel>> GetLastChats(int userId, string nameFilter, int count, int skipCount)
         {
@@ -119,7 +125,8 @@ namespace chat_backend.Services
                         .OrderByDescending(x => x.Id)
                         .Select(x => new { x.Id, x.Text, x.TimeStampUtc })
                         .FirstOrDefault()
-                }).SingleOrDefaultAsync();
+                })
+                .SingleOrDefaultAsync();
 
             if (chat == null)
                 return null;
@@ -165,11 +172,175 @@ namespace chat_backend.Services
                     Id = m.Id,
                     ChatId = m.ChatId,
                     SenderId = m.SenderId,
-                    Text = m.Text,
+                    Content = m.Text,
                     TimeStampUtc = m.TimeStampUtc,
                 });
 
             return messages;
+        }
+
+        internal async Task SaveMessageAsync(Message message)
+        {
+            await _dbContext.Messages.AddAsync(message);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        internal Task<Chat[]> FindChatsAsync(Expression<Func<Chat, bool>> predicate)
+        {
+            return _dbContext.Chats
+                .Where(predicate)
+                .Include(x => x.Users)
+                //.Select(x => new { x.Id, x.IsGroup, Users = x.Users.Select(y => y.Id) })
+                .ToArrayAsync();
+        }
+
+        internal Task<int[]> FindChatIdsAsync(Expression<Func<ChatToUser, bool>> predicate)
+        {
+            return _dbContext.ChatToUser
+                .Where(predicate)
+                .Select(x => x.ChatId)
+                .ToArrayAsync();
+        }
+
+        internal async Task<bool> IsParticipantAsync(int senderId, int chatId)
+        {
+            return await _redisService.IsParticipantAsync(senderId, chatId) || await _dbContext.Chats.Include(x => x.Users).AnyAsync(x => x.Id == chatId && x.Users.Any(user => user.Id == senderId));
+        }
+
+        public async Task<bool> IsGroup(int chatId)
+        {
+            var chat = await _redisService.Chats.FindByIdAsync(chatId.ToString());
+
+            if (chat != null)
+                return chat.IsGroup;
+
+            var chats = await _dbContext.Chats
+                .Where(x => x.Id == chatId)
+                .Select(x => x.IsGroup)
+                .ToArrayAsync();
+
+            if (chats.Length == 0)
+                throw new KeyNotFoundException($"No chat with {chatId}");
+
+            return chats[0];
+        }
+
+        private async Task<IChat?> FindExistingChatAsync(int callerId, int userId)
+        {
+            var directChat = (await _redisService.Chats
+                .Where(x => !x.IsGroup
+                                && x.Participants.Any(y => y.UserId == callerId)
+                                && x.Participants.Any(y => y.UserId == userId))
+                .ToArrayAsync())
+                .SingleOrDefault();
+
+            if (directChat != null)
+            {
+                if (directChat.Participants.Length < 2)
+                    throw new ArgumentException("Chat cannot contain less than 2 users");
+
+                return directChat;
+            }
+
+            return await _dbContext.Chats
+                .Include(x => x.Users)
+                .SingleOrDefaultAsync(x => !x.IsGroup
+                                            && x.Users.Any(x => x.Id == callerId)
+                                            && x.Users.Any(x => x.Id == userId));
+        }
+
+        internal async Task<int> GetOrAddDirectChatAsync(int callerId, int userId)
+        {
+            var chat = await FindExistingChatAsync(callerId, userId);
+
+            if (chat != null)
+                return chat.Id;
+
+            var createdChat = await CreateDirectChatAsync(callerId, userId);
+            
+            await Online.LoadAndJoinChat(createdChat, callerId, userId);
+
+            return createdChat.Id;
+        }
+
+        private async Task<Chat> CreateDirectChatAsync(int callerId, int userId)
+        {
+            var users = (await _dbContext.Users
+                  .Where(x => x.Id == callerId || x.Id == userId)
+                  //.Select(x => x.Id)   //Uneccessary optimization to reduce fetched data              
+                  .ToListAsync());
+            //.Select(x => new User() { Id = x })
+            //.ToList();
+
+            if (users.Count != 2)
+                throw new ArgumentException($"There less or more than 2 existing users for direct chat of users {callerId} and {userId}");
+
+            //TODO Add restrictions
+            var chat = new Chat { Name = $"DirectChat: {string.Join('|', users.Select(x => x.Name))}", IsGroup = false, Users = users };
+            await _dbContext.Chats.AddAsync(chat);
+            await _dbContext.SaveChangesAsync();
+
+            return chat;
+        }
+
+        internal async Task<IEnumerable<string>> JoinOrLoadChatsAsync(int userId, string connectionId)
+        {
+            var chatIds = (await FindChatIdsAsync(x => x.UserId == userId))
+               .Select(x => x.ToString())
+               .ToArray();
+
+            var redisUser = new RedisUser { Id = userId, ChatIds = chatIds, ConnectionId = connectionId };
+
+            var chatsInfo = await _redisService.Chats.FindByIdsAsync(chatIds);
+
+            var loadedChats = chatsInfo.Where(x => x.Value != null).Select(x => x.Value!);
+            var unloadedChats = chatsInfo.Where(x => x.Value == null).Select(x => int.Parse(x.Key));
+
+            if (loadedChats.Any())
+                await _redisService.UpdateLoadedChatsAsync(loadedChats, userId, true);
+
+            if (unloadedChats.Any())
+                await LoadChatsAsync(unloadedChats, userId);
+
+            await _redisService.Users.InsertAsync(redisUser);
+
+            return chatIds.Select(x => x.ToString());
+        }
+
+        async Task LoadChatsAsync(IEnumerable<int> unloadedChats, int userId)
+        {
+            var dbChats = await FindChatsAsync(x => unloadedChats.Contains(x.Id));
+            var redisChats = dbChats.Select(x => new RedisChat(x));
+            foreach (var chat in redisChats)
+                chat.UpdateParticipant(userId, true);
+
+            await _redisService.Chats.InsertAsync(redisChats);
+        }
+
+        internal async Task<ContactModel?> GetUserContactByIdAsync(int? userId)
+        {
+            var user = await _dbContext.Users
+                .Where(x => x.Id == userId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,                   
+                    AvatarSrc = "ImageSrcPlate"
+                })
+                .SingleOrDefaultAsync();
+
+            if (user == null)
+                return null;
+
+            ContactModel contact = new()
+            {
+                UserId = user.Id,
+                Name = user.Name,
+                AvatarSrc = user.AvatarSrc,
+                IsStranger = false,
+            };
+
+            return contact;
         }
     }
 }

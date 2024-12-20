@@ -1,14 +1,20 @@
 export interface MessageBase {
     Id?: number;
-    Text: string;
+    Content: string;
+    Type: MessageType;
     SenderId?: number;
     TimeStampUtc: string;
+}
+
+export interface ChatMessage extends MessageBase {
+    ChatId: number;
 }
 
 export interface DirectMessage extends MessageBase {
     ReceiverId: number;
 }
 
-export interface ChatMessage extends MessageBase {
-    ChatId: number;    
+export enum MessageType {
+    'Message',
+    'IceCandidate'
 }

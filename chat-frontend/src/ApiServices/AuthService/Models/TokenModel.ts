@@ -1,7 +1,7 @@
 
 interface Token
 {
-    UserId: number;
+    UserId: string;
     Role: string,
     UserName: string,
     exp: number,

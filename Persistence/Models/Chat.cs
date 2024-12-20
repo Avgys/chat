@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Persistence.Models
 {
 
-    public class Chat
+    public class Chat : IChat
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

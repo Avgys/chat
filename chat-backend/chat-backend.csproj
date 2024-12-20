@@ -11,6 +11,10 @@
     <Configurations>Debug;Release;Docker;LocalDocker</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Docker|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="appsettings.LocalDocker.json" />
   </ItemGroup>

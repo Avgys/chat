@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Chat } from "@/Models/Chat";
 import { FormatStringDate } from "@/Models/FormatStringDate";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { addChats, selectChat, selectCurrentChat, updateOrAddChat } from "@/store/slice";
+import { addChats, selectChat, getCurrentChat, updateOrAddChat } from "@/store/slice";
 import { useMemo, useState } from "react";
 import SearchInput from "../ui/search-input";
 
@@ -15,7 +15,7 @@ function ContactList() {
     const [usedSearches, setUsedSearches] = useState<string[]>(['']);
 
     const unFilteredChats = useAppSelector(x => x.chatState.chats);
-    const selectedChat = useAppSelector(x => selectCurrentChat(x.chatState));
+    const selectedChat = useAppSelector(x => getCurrentChat(x.chatState));
 
     const dispatch = useAppDispatch();
 
@@ -49,7 +49,6 @@ function ContactList() {
             const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
             dispatch(addChats(newChats))
         })
-
     }
 
     const contactsToShow = useMemo(() => {
@@ -76,9 +75,8 @@ function ContactList() {
         </>)
     }, [unFilteredChats, contactsFilter]);
 
-
     return (
-        <div className="w-1/3 bg-gray-800 border-r border-gray-700">
+        <div className="w-1/5 bg-gray-800 border-r border-gray-700">
             <SearchInput onInput={searchUsers} />
             <ScrollArea className="h-[calc(100vh-73px)]">
                 {contactsToShow}

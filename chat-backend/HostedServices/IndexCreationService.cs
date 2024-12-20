@@ -14,6 +14,7 @@ namespace chat_backend.HostedServices
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            await _provider.Connection.ExecuteAsync("FLUSHALL");
             await _provider.Connection.CreateIndexAsync(typeof(RedisUser));
             await _provider.Connection.CreateIndexAsync(typeof(RedisChat));
         }

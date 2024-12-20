@@ -1,6 +1,6 @@
 'use client'
 
-import AuthComponent from "@/components/AuthComponent";
+import AuthComponent from "@/components/authComponent";
 // import ReduxProvider from "@/store/ProviderComponent";
 import store from "@/store/store";
 import { Provider } from "react-redux";

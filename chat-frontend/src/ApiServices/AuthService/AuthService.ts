@@ -1,6 +1,6 @@
 import { Credentials, CredentialsModel } from "@/Models/Credentials";
 import { ApiService } from "../ApiService";
-import { Auth } from "@/apiPaths";
+import { AUTH } from "@/apiPaths";
 
 export class AuthService {
     private static readonly  TokenKey: string = 'token';
@@ -10,11 +10,11 @@ export class AuthService {
     private static lastTimer: NodeJS.Timeout | null = null;
 
     private static async GetNewAccessToken() {
-        return await ApiService.GET<{ token: string }>(Auth.REFRESH_PATH);
+        return await ApiService.GET<{ token: string }>(AUTH.REFRESH_PATH);
     }
 
     public static async Login(credentials: Credentials): Promise<LoginResponse | null> {
-        const responseSalt = await ApiService.GET<{ salt: string }>(Auth.SALT_PATH + '/?name=' + credentials.login);
+        const responseSalt = await ApiService.GET<{ salt: string }>(AUTH.SALT_PATH + '/?name=' + credentials.login);
 
         if (!responseSalt)
             return null;
@@ -26,8 +26,7 @@ export class AuthService {
             ClientPasswordHash: passwordHash,
             ClientSalt: responseSalt.salt
         };
-
-        const response = await ApiService.POST<LoginResponse>(Auth.LOGIN_PATH, payload);
+        const response = await ApiService.POST<LoginResponse>(AUTH.LOGIN_PATH, payload);
 
         if (response != null)
             this.SetToken(response.token);
@@ -36,7 +35,7 @@ export class AuthService {
     }
 
     public static async Register(credentials: Credentials): Promise<RegisterResponse | null> {
-        const responseSalt = await ApiService.GET<{ salt: string }>(Auth.SALT_PATH);
+        const responseSalt = await ApiService.GET<{ salt: string }>(AUTH.SALT_PATH);
 
         if (!responseSalt)
             return null;
@@ -48,7 +47,7 @@ export class AuthService {
             ClientPasswordHash: passwordHash,
             ClientSalt: responseSalt.salt
         };
-        return await ApiService.POST(Auth.REGISTER_PATH, payload);
+        return await ApiService.POST(AUTH.REGISTER_PATH, payload);
     }
 
     static async IsAuth(): Promise<Token | null> {

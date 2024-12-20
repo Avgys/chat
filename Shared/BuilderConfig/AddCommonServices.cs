@@ -7,7 +7,7 @@ namespace Shared.BuilderConfig
 {
     public static class CommonServices
     {
-        private static string[] _allowedCorsHeaders = ["Authorization", "x-signalr-user-agent", "x-requested-with", "content-type"];
+        private static string[] _allowedCorsHeaders = ["authorization", "x-signalr-user-agent", "x-requested-with", "content-type"];
         private static string[] _allowedClientOrigins = ["http://localhost:3000", "https://localhost:3000", "http://localhost:3000", "https://localhost:3001"];
 
         public static IServiceCollection AddSharedServices(this IServiceCollection services)
@@ -22,7 +22,7 @@ namespace Shared.BuilderConfig
             {
                 options.AddPolicy("AllowReactApp",
                 builder => builder
-                    .SetIsOriginAllowed(x => x.StartsWith("172"))
+                    //.SetIsOriginAllowed(x => x.StartsWith("172") |)
                     .WithOrigins(_allowedClientOrigins)
                     .WithMethods("GET", "POST")
                     .WithHeaders(_allowedCorsHeaders)

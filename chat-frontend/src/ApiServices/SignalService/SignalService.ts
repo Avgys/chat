@@ -1,81 +1,71 @@
 
 import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { AuthService } from "../AuthService/AuthService";
-import { HUBS } from "@/apiPaths";
-import Urls from "@/urls";
-import { ChatMessage } from "@/Models/Message";
+
+import URLS from "@/urls";
+import { ChatMessage, MessageType } from "@/Models/Message";
+import { SDPMessage } from "@/Models/SDPMessage";
+import { CHAT_HUB } from "@/apiPaths";
 
 export class SignalService {
-    private static CurrentConnection: HubConnection | null;
+    private static currentConnection: HubConnection | null;
 
-    public static OnReceiveMessage: ((newMessage: ChatMessage) => void)[] = [];
+    public static onMessageReceive: ((newMessage: ChatMessage) => void) | null = null;
 
-    static async Init() {
-        console.log('initiating ws connection');
-        const token = await AuthService.GetTokenAsync();
-        console.log("Current token: ");
-        this.CurrentConnection = new HubConnectionBuilder()
-            .withUrl(Urls.SIGNAL_URL + HUBS.HUB_PATH,
+    public static onOfferReceive: ((offer: SDPMessage) => Promise<SDPMessage>) | null = null;
+    public static onIceCandidateOffer: ((offer: ChatMessage) => void) | null = null;
+
+    static async connectToServer() {
+        console.debug('initiating ws connection');
+
+        this.currentConnection = new HubConnectionBuilder()
+            .withUrl(URLS.SIGNAL_URL + CHAT_HUB.HUB_PATH,
                 {
                     accessTokenFactory: () => AuthService.GetTokenAsync().then(token => token ?? ''),
-                    skipNegotiation: true,
-                    withCredentials: true,
+                    //skipNegotiation: true,
+                    //withCredentials: true,
                     transport: HttpTransportType.WebSockets,
                 })
             .withAutomaticReconnect()
             .configureLogging(LogLevel.Information)
             .build();
 
-
-        this.SetHandlers(this.CurrentConnection);
-
-        async function start(connection: HubConnection) {
-            try {
-                await connection.start();
-                console.log("SignalR Connected.");
-            } catch (err) {
-                console.log(err);
-            }
-        };
+        this.SetHandlers(this.currentConnection);
 
         try {
-            start(this.CurrentConnection);
-        }
-        catch (e) {
-            console.log(e);
-        }
-        finally {
-            return true;
+            await this.currentConnection.start();
+            console.debug("SignalR Connected.");
+        } catch (err) {
+            console.error(err);
+            throw err;
         }
     }
 
     static SetHandlers(connection: HubConnection) {
-        connection.on('ReceiveMessageAsync', SignalService.ReceiveMessage);
+        connection.on('ReceiveMessage', (data: any) => this.RouteMessage(data));
+        connection.on('ReceiveOffer', async (data: any) => { return this.onOfferReceive && this.onOfferReceive(data) });
 
         connection.onclose(async () => {
             console.error('SignalR connection close');
         });
     }
 
-    static ReceiveMessage(data: ChatMessage) {
-        console.log('Data: ', JSON.stringify(data));
-        SignalService.OnReceiveMessage.forEach(element => element.call(null, data));
+    static RouteMessage(newMessage: ChatMessage) {
+        if (newMessage.Type == MessageType.Message) {
+            this.onMessageReceive && this.onMessageReceive(newMessage);
+        }
+        else if (newMessage.Type == MessageType.IceCandidate) {
+            this.onIceCandidateOffer && this.onIceCandidateOffer(newMessage);
+        }
     }
 
-    static async SendMessage(messageText: string, receiverId: number, isChat: boolean): Promise<number> {
-        const sendMessage: string = isChat ? 'SendChatMessage' : 'SendDirectMessage';
-
-        const message: any = { Text: messageText, TimeStampUtc: new Date() };
-        
-        if (isChat)
-            message.ChatId = receiverId;
-        else
-            message.ReceiverId = receiverId;
-
-        return await this.CurrentConnection?.invoke<number>(sendMessage, message) ?? -1;
-    }
-
-    static JoinChat() {
-
+    public static async sendRequest<T>(methodName: string, data: any) {
+        try {
+            return await this.currentConnection?.invoke<T>(methodName, data);
+        }
+        catch (err) {
+            console.error(err);
+            return null;
+        }
     }
 }
