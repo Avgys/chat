@@ -1,4 +1,4 @@
-export type Contact = {
+export type ContactModel = {
   UserId: number | null,
   ChatId: number | null,
   Name: string,
@@ -8,7 +8,7 @@ export type Contact = {
   IsStranger: boolean
 }
 
-export function FixContactType(contact: Contact) {
+export function FixContactType(contact: ContactModel) {
     contact.AvatarSrc = 'face.jpeg'
     // if (contact.LastMessageUTC)
     //     contact.LastMessageUTC = new Date(contact.LastMessageUTC);

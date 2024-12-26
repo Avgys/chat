@@ -4,19 +4,24 @@ import { ChatService } from "@/ApiServices/ChatService/ChatService";
 import { SignalService } from "@/ApiServices/SignalService/SignalService";
 import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC";
 import { AuthContext } from "@/components/authComponent";
-import CallArea from "@/components/chat-components/call-area";
-import ChatArea from "@/components/chat-components/chat-area";
 import ContactList from "@/components/chat-components/contact-list";
-import { SelectedContact } from "@/components/chat-components/selected-contact";
 import { Chat } from "@/Models/Chat";
+import { ContactModel } from "@/Models/Contact";
+import { MediaKind } from "@/Models/MediaKind";
 import { ChatMessage } from "@/Models/Message";
-import { useAppStore } from "@/store/hooks";
-import { addChats, addMessage, updateOrAddChat } from "@/store/slice";
+import { useAppSelector, useAppStore } from "@/store/hooks";
+import { addChats, addMessage, getCurrentCallChat, getCurrentChat, updateOrAddChat } from "@/store/slice";
 import { useContext, useEffect, useState } from "react";
+import { CallArea } from "../../components/chat-components/call-area/call-area";
+import { ContactInfo } from "@/components/chat-components/contact-info";
+import ChatArea from "@/components/chat-components/chat-area";
 
 export default function ChatComponent() {
   const { isAuth } = useContext(AuthContext);
   const [initiated, setInitiated] = useState(true);
+
+  const selectedChat = useAppSelector(x => getCurrentChat(x.chatState));
+  const currentCall = useAppSelector(x => getCurrentCallChat(x.chatState));
 
   const store = useAppStore();
 
@@ -28,13 +33,15 @@ export default function ChatComponent() {
           store.dispatch(addChats(newChats))
         }),
         SignalService.connectToServer(),
-        WebRTCService.prepareService()
       ];
 
       Promise.all(tasks).then(() => setInitiated(true));
 
       SignalService.onMessageReceive = AddMessage;
-      return () => { SignalService.onMessageReceive = null };
+
+      return () => {
+        SignalService.onMessageReceive = null
+      };
     }
   }, [isAuth]);
 
@@ -43,7 +50,7 @@ export default function ChatComponent() {
     const chats = store.getState().chatState.chats;
 
     let cachedChat = chats.find(x => x.contact.ChatId == newMessage.ChatId);
-    
+
     if (!cachedChat?.messages) {
       const loadedChat = await ChatService.LoadChat(newMessage.ChatId);
       store.dispatch(updateOrAddChat(loadedChat));
@@ -57,10 +64,21 @@ export default function ChatComponent() {
   return (
     <main className="justify-center">
       {isAuth && initiated &&
-        <div className="flex bg-gray-900 text-gray-100">
+        <div className="flex bg-gray-900 text-gray-100 h-screen">
           <ContactList />
-          <SelectedContact />
+          <div className="flex flex-col w-full h-screen">
+            {selectedChat && <ContactInfo selectedChat={selectedChat} isInCall={!!currentCall} />}
+            <div className="flex w-full h-full overflow-auto">
+              <CallArea className="flex-1 min-w-1/2"/>
+              {selectedChat
+                ? <ChatArea className="flex-1" chat={selectedChat} />
+                : <div className="h-full flex-1 w-full flex items-center justify-center text-gray-400">
+                    Select a contact to start chatting
+                  </div>}
+            </div>
+          </div>
         </div>}
     </main>
   );
 }
+

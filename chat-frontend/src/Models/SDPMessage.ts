@@ -1,6 +1,6 @@
-import { Contact } from "./Contact";
+import { ContactModel } from "./Contact";
 
 export interface SDPMessage {
-    Contact: Contact;
+    Contact: ContactModel;
     Content: string
 }

@@ -2,12 +2,12 @@
 {
     public record ContactModel
     {
-        public int? UserId;
-        public int? ChatId;
-        public bool IsStranger;
-        public string Name = default!;
-        public string AvatarSrc = default!;
-        public string? LastMessage;
-        public DateTime? LastMessageUTC;
+        public int? UserId { get; set; }
+        public int? ChatId { get; set; }
+        public bool IsStranger { get; set; }
+        public string Name { get; set; } = default!;
+        public string AvatarSrc { get; set; } = default!;
+        public string? LastMessage { get; set; }
+        public DateTime? LastMessageUTC { get; set; }
     }
 }

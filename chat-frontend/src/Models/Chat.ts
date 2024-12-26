@@ -1,4 +1,4 @@
-import { Contact } from "./Contact";
+import { ContactModel } from "./Contact";
 import { ChatMessage } from "./Message";
 
-export type Chat = { contact: Contact, messages: ChatMessage[] | null, participants: Contact[] | null, isLoaded: boolean }
+export type Chat = { contact: ContactModel, messages: ChatMessage[] | null, participants: ContactModel[] | null, isLoaded: boolean }

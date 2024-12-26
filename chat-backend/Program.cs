@@ -11,6 +11,7 @@ using Redis.OM;
 using Redis.OM.Searching;
 using Shared.BuilderConfig;
 using System.Text;
+using System.Text.Json;
 
 namespace chat_backend
 {

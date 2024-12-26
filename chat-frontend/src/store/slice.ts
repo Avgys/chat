@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from './store'
 import { Chat } from '@/Models/Chat'
 import { ChatMessage } from '@/Models/Message'
+import { ContactModel } from '@/Models/Contact'
 
 interface ChatsState {
     chats: Chat[],
@@ -39,14 +40,14 @@ const chatSlice = createSlice({
             };
         },
         addChats: (state, action: PayloadAction<Chat[]>) => {
-            const newChats = action.payload.filter(x => findChatIndex(state.chats, x) === -1);
+            const newChats = action.payload.filter(x => findChatIndexByContact(state.chats, x.contact) === -1);
             if (newChats.length > 0)
                 state.chats = [...state.chats, ...newChats];
         },
         updateOrAddChat: (state, action: PayloadAction<Chat>) => {
             const newChat = action.payload;
             newChat.messages?.sort((a, b) => a.Id! - b.Id!);
-            const indx = findChatIndex(state.chats, newChat);
+            const indx = findChatIndexByContact(state.chats, newChat.contact);
 
             if (indx != -1)
                 state.chats[indx] = newChat;
@@ -57,7 +58,7 @@ const chatSlice = createSlice({
         selectChat: (state, action: PayloadAction<Chat>) => {
             const chat = action.payload;
 
-            const indx = findChatIndex(state.chats, chat);
+            const indx = findChatIndexByContact(state.chats, chat.contact);
             state.currentChatIndex = indx;
         },
         selectCaller: (state, action: PayloadAction<Chat | null>) => {
@@ -68,7 +69,7 @@ const chatSlice = createSlice({
                 return;
             }
 
-            const indx = findChatIndex(state.chats, chat);
+            const indx = findChatIndexByContact(state.chats, chat.contact);
             state.currentCallChatIndex = indx;
         },
     },
@@ -82,13 +83,18 @@ export function getCurrentCallChat(state: ChatsState) {
     return state.currentCallChatIndex !== undefined ? state.chats[state.currentCallChatIndex] : null;
 }
 
-function findChatIndex(chats: Chat[], chatToFind: Chat) {
-    return chats.findIndex(x => x.contact.ChatId && x.contact.ChatId === chatToFind.contact.ChatId
-        || x.contact.UserId && x.contact.UserId === chatToFind.contact.UserId);
+function findChatIndexByContact(chats: Chat[], contact: ContactModel) {
+    return chats.findIndex(x => x.contact.ChatId && x.contact.ChatId === contact.ChatId
+        || x.contact.UserId && x.contact.UserId === contact.UserId);
 }
 
 export function findChatById(state: ChatsState, chatId: number) {
     return state.chats.find(x => x.contact.ChatId && x.contact.ChatId === chatId);
+}
+
+export function findChatByContact(state: ChatsState, contact: ContactModel) {
+    const index = findChatIndexByContact(state.chats, contact)
+    return index != -1 ? state.chats[index] : null;
 }
 
 export const { addMessage, addChats, updateOrAddChat, selectChat, selectCaller } = chatSlice.actions

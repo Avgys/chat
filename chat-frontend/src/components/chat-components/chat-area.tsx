@@ -8,20 +8,20 @@ import { ChatMessage } from "@/Models/Message"
 import { Send } from "lucide-react"
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { AuthContext } from "../authComponent"
-import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC"
 import { ChatService } from "@/ApiServices/ChatService/ChatService"
 import { Chat } from "@/Models/Chat"
 import { useAppDispatch } from "@/store/hooks"
 import { addMessage } from "@/store/slice"
+import { cn } from "@/lib/utils"
 
-function ChatArea({ chat }: { chat: Chat }) {
+function ChatArea({ chat, className }: { className: string, chat: Chat }) {
   const [message, setMessage] = useState("");
   const messageEndRef = useRef<HTMLSpanElement>(null);
 
   const messages = chat?.messages ?? [];
 
   const { tokenInfo } = useContext(AuthContext);
-  const currentUserId = tokenInfo!.UserId;
+  const currentUserId = Number(tokenInfo!.UserId);
 
   const dispatch = useAppDispatch();
 
@@ -48,8 +48,8 @@ function ChatArea({ chat }: { chat: Chat }) {
   }, [messages]);
 
   return (<>
-    <div className="flex-1 flex flex-col bg-gray-900">
-      <ScrollArea className="flex-1 p-4">
+    <div className={cn("flex flex-auto w-full flex-col bg-gray-900 h-full", className)}>
+      <ScrollArea className="p-4">
         {messagesToShow}
         <span ref={messageEndRef} />
       </ScrollArea>
@@ -81,7 +81,9 @@ function MessageComponent({ message, isSender }: { message: ChatMessage, isSende
         ? 'bg-blue-500 text-white rounded-br-none'
         : 'bg-blue-300 text-gray-800 rounded-bl-none'
         }`}>
-      <p>{message.Content}</p>
+      <p className="break-all w-full">
+        {message.Content}
+      </p>
       <p className={`text-xs mt-1 ${isSender ? 'text-blue-100' : 'text-gray-500'}`}>
         {FormatStringDate(message.TimeStampUtc, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'long' })}
       </p>

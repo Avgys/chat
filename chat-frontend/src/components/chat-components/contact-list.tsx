@@ -76,7 +76,7 @@ function ContactList() {
     }, [unFilteredChats, contactsFilter]);
 
     return (
-        <div className="w-1/5 bg-gray-800 border-r border-gray-700">
+        <div className="min-w-32 max-w-72 bg-gray-800 border-r border-gray-700">
             <SearchInput onInput={searchUsers} />
             <ScrollArea className="h-[calc(100vh-73px)]">
                 {contactsToShow}

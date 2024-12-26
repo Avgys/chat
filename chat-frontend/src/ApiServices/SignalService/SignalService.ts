@@ -13,7 +13,7 @@ export class SignalService {
     public static onMessageReceive: ((newMessage: ChatMessage) => void) | null = null;
 
     public static onOfferReceive: ((offer: SDPMessage) => Promise<SDPMessage>) | null = null;
-    public static onIceCandidateOffer: ((offer: ChatMessage) => void) | null = null;
+    public static onRemoteIceCandidateOffer: ((offer: ChatMessage) => void) | null = null;
 
     static async connectToServer() {
         console.debug('initiating ws connection');
@@ -55,7 +55,7 @@ export class SignalService {
             this.onMessageReceive && this.onMessageReceive(newMessage);
         }
         else if (newMessage.Type == MessageType.IceCandidate) {
-            this.onIceCandidateOffer && this.onIceCandidateOffer(newMessage);
+            this.onRemoteIceCandidateOffer && this.onRemoteIceCandidateOffer(newMessage);
         }
     }
 

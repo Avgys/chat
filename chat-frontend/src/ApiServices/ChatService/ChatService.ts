@@ -1,6 +1,6 @@
 import { CHAT_HUB, CHATS } from "@/apiPaths";
 import { ApiService } from "../ApiService";
-import { Contact, FixContactType } from "@/Models/Contact";
+import { ContactModel, FixContactType } from "@/Models/Contact";
 import { ChatMessage, DirectMessage, MessageBase, MessageType } from "@/Models/Message";
 import { Chat } from "@/Models/Chat";
 import { SignalService } from "../SignalService/SignalService";
@@ -8,9 +8,9 @@ import { AuthService } from "../AuthService/AuthService";
 
 export class ChatService {
 
-    static async LoadChatContact(chatId: number): Promise<Contact | null> {
+    static async LoadChatContact(chatId: number): Promise<ContactModel | null> {
         const path = CHATS.CHATS_PATH + `?chatId=${chatId}`;
-        const response = await ApiService.GET<Contact>(path);
+        const response = await ApiService.GET<ContactModel>(path);
 
         if (response)
             FixContactType(response);
@@ -18,9 +18,9 @@ export class ChatService {
         return response;
     }
 
-    static async loadContacts(nameFilter?: string): Promise<Contact[]> {
+    static async loadContacts(nameFilter?: string): Promise<ContactModel[]> {
         const path = CHATS.SEARCH_CONTACTS_PATH + (nameFilter !== undefined ? `?name=${nameFilter}` : '');
-        const response = await ApiService.GET<Contact[]>(path) ?? [];
+        const response = await ApiService.GET<ContactModel[]>(path) ?? [];
 
         response.forEach(x => FixContactType(x))
         return response;
@@ -32,9 +32,9 @@ export class ChatService {
         return response;
     }
 
-    static async LoadParticipantsInChat(chatId: number): Promise<Contact[]> {
+    static async LoadParticipantsInChat(chatId: number): Promise<ContactModel[]> {
         const path = CHATS.SEARCH_CONTACTS_PATH + `?chatId=${chatId}`;
-        const response = await ApiService.GET<Contact[]>(path) ?? [];
+        const response = await ApiService.GET<ContactModel[]>(path) ?? [];
 
         response.forEach(x => FixContactType(x));
         return response;
@@ -58,7 +58,7 @@ export class ChatService {
         };
     }
 
-    public static async sendMessage(messageText: string, contact: Contact): Promise<ChatMessage> {
+    public static async sendMessage(messageText: string, contact: ContactModel): Promise<ChatMessage> {
         const isChat = !!contact.ChatId;
         let socketMethod: string;
         let message: MessageBase;

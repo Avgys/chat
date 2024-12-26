@@ -1,20 +1,38 @@
-import { Contact } from "@/Models/Contact";
+import { ContactModel } from "@/Models/Contact";
 import { SignalService } from "../SignalService/SignalService";
 import { SDPMessage } from "@/Models/SDPMessage";
 import { ChatMessage, MessageType } from "@/Models/Message";
 import { CHAT_HUB } from "@/apiPaths";
 import { off } from "process";
-import { MediaKind } from "@/components/chat-components/selected-contact";
+import { MediaKind } from "@/Models/MediaKind";
+import { createEmptyStream } from "@/lib/utils";
+import { Strait } from "next/font/google";
 
 export class WebRTCService {
     static peerConnection: RTCPeerConnection;
-    static isInitiated: boolean = false;
     static currentChannel: RTCDataChannel | null = null;
     static currentCallChatId: number | null = null;
 
-    static isUserAnswer: ((contact: Contact) => Promise<MediaKind>) | null = null;
+    static isUserAnswer: ((contact: ContactModel) => Promise<MediaKind>) | null = null;
 
-    static prepareService() {
+    static isInitiated: boolean = false;
+    static onInitiated: ((connection: RTCPeerConnection) => Promise<void>) | null = null;
+
+    static onClose: (() => void) | null = null;
+
+    static isConnected() {
+        return this.peerConnection.signalingState === "stable"
+            && this.peerConnection.remoteDescription
+            && this.peerConnection.iceGatheringState === "complete"
+    }
+
+    static candidates: RTCIceCandidate[] = [];
+
+    public static _initiazlize() {
+        SignalService.onOfferReceive = (message) => this.receiveOffer(message);
+    }
+
+    static async prepareService() {
         // const servers = {
         //     iceServers: [
         //         {
@@ -30,28 +48,38 @@ export class WebRTCService {
         this.peerConnection.onicecandidate = e => {
             console.log("New Ice Candidate " + JSON.stringify(e.candidate));
 
-            if (e.candidate && this.currentCallChatId) {
-                this.informOtherParticipants(this.currentCallChatId, e.candidate);
+            if (e.candidate)
+                this.candidates.push(e.candidate);
+
+            if (!e.candidate && this.isConnected()) {
+                this.informOtherParticipants(this.currentCallChatId!, this.candidates);
             }
         };
 
-        SignalService.onIceCandidateOffer = (message) => {
+        this.peerConnection.onsignalingstatechange = (event) => {
+            if (this.isConnected()) {
+                this.informOtherParticipants(this.currentCallChatId!, this.candidates);
+            }
+        }
+
+        SignalService.onRemoteIceCandidateOffer = (message) => {
             console.log('Received ice candidate: ' + message.Content);
             if (this.peerConnection) {
-                this.peerConnection.addIceCandidate(JSON.parse(message.Content));
+                const candidates = JSON.parse(message.Content) as RTCIceCandidate[];
+                candidates.forEach(candidate => this.peerConnection.addIceCandidate(candidate));
             }
         };
 
-        SignalService.onOfferReceive = this.receiveOffer;
-
+        this.onInitiated && await this.onInitiated(this.peerConnection);
         this.isInitiated = true;
     }
 
-    static async startConnection(contact: Contact) {
+
+    static async startConnection(contact: ContactModel) {
         //TODO Block if busy
 
         if (!this.isInitiated)
-            this.prepareService();
+            await this.prepareService();
 
         if (this.currentChannel == null) {
             this.currentChannel = this.peerConnection.createDataChannel("channel1");
@@ -66,14 +94,17 @@ export class WebRTCService {
 
         const answer = await this.sendOffer(contact, JSON.stringify(offer));
 
+        let answerContent: RTCSessionDescriptionInit | undefined;
+        if (answer)
+            answerContent = JSON.parse(answer.Content) as RTCSessionDescriptionInit;
         // if (this.peerConnection.currentRemoteDescription) {
         //     console.log("Already connected");
         //     this.currentChatId = null;
         //     return false;
         // }
 
-        if (answer) {
-            await this.peerConnection.setRemoteDescription(JSON.parse(answer.Content));
+        if (answerContent?.sdp && answerContent.type === 'answer') {
+            await this.peerConnection.setRemoteDescription(answerContent);
 
             console.log("set successfully")
             //this.currentChannel.send('Hi');
@@ -97,7 +128,7 @@ export class WebRTCService {
         };
     }
 
-    private static async sendOffer(contact: Contact, offerSDP: string) {
+    private static async sendOffer(contact: ContactModel, offerSDP: string) {
         const message: SDPMessage = { Content: offerSDP, Contact: contact };
 
         const answerOffer = await SignalService.sendRequest<SDPMessage>(CHAT_HUB.START_PEER_CONNECTION_METHOD, message);
@@ -107,28 +138,32 @@ export class WebRTCService {
     }
 
     static async receiveOffer(offerSDP: SDPMessage): Promise<SDPMessage> {
-        if (!WebRTCService.isInitiated)
-            WebRTCService.prepareService();
+        if (!this.isInitiated)
+            await this.prepareService();
 
         //TODO Prevent if busy
 
-        if (this.isUserAnswer && !await this.isUserAnswer(offerSDP.Contact))
+        if (this.isUserAnswer && !(await this.isUserAnswer(offerSDP.Contact)))
             return {} as any;
+
+        this.currentCallChatId = offerSDP.Contact.ChatId;
 
         console.log("Got WebRTC offer: " + offerSDP.Content);
 
-        WebRTCService.peerConnection.ondatachannel = e => {
-            WebRTCService.currentChannel = e.channel;
-            WebRTCService.setHandlersOnChannel(WebRTCService.currentChannel);
+        this.peerConnection.ondatachannel = e => {
+            this.currentChannel = e.channel;
+            this.setHandlersOnChannel(this.currentChannel);
         }
 
-        const offer = JSON.parse(offerSDP.Content);
-        await WebRTCService.peerConnection.setRemoteDescription(offer);
+        const offer = JSON.parse(offerSDP.Content) as RTCSessionDescriptionInit;
 
-        const answer = await WebRTCService.peerConnection.createAnswer();
-        await WebRTCService.peerConnection.setLocalDescription(answer);
+        if (offer.type !== 'offer')
+            return {} as any;
 
-        WebRTCService.currentCallChatId = offerSDP.Contact.ChatId;
+        await this.peerConnection.setRemoteDescription(offer);
+
+        const answer = await this.peerConnection.createAnswer();
+        await this.peerConnection.setLocalDescription(answer);
 
         return { Content: JSON.stringify(answer), Contact: offerSDP.Contact };
     }
@@ -147,4 +182,82 @@ export class WebRTCService {
 
         SignalService.sendRequest(CHAT_HUB.SEND_CHAT_MESSAGE_METHOD, informMessage);
     }
+
+    static endConnection() {
+        this.peerConnection.getReceivers().forEach((receiver) => {
+            const track = receiver.track;
+            if (track) {
+                track.stop();
+            }
+        });
+
+        this.peerConnection.getTransceivers().forEach((transceiver) => {
+            transceiver.stop();
+        });
+
+        this.peerConnection.close();
+
+        this.peerConnection.onicecandidate = null;
+        this.peerConnection.ontrack = null;
+        this.peerConnection.onconnectionstatechange = null;
+        this.peerConnection.oniceconnectionstatechange = null;
+        this.peerConnection.onnegotiationneeded = null;
+        this.peerConnection.onsignalingstatechange = null;
+
+        if (this.currentChannel)
+            this.currentChannel.close();
+
+        this.isInitiated = false;
+    }
+
+    static async replaceTracks(newStream: MediaStream, constraints: MediaKind) {
+
+        const connection = this.peerConnection;
+        // Replace the audio track
+        if (constraints.audio) {
+            const newAudioTrack = newStream.getAudioTracks()[0];
+            await replaceTrack(connection, newAudioTrack, 'audio');
+        }
+
+        if (constraints.video) {
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            await replaceTrack(connection, newVideoTrack, 'video');
+        }
+
+        return newStream;
+    }
+
+    static setInputStream(stream: MediaStream) {
+        this.peerConnection.ontrack = event => {
+            // event.streams[0].getTracks().forEach(track => {
+            //     stream.addTrack(track);
+            // });
+            stream.addTrack(event.track);
+        }
+    }
+
+    static setOutputStream(stream: MediaStream) {
+        stream.getTracks().forEach((track) => { this.peerConnection.addTrack(track, stream) })
+    }
 }
+
+async function replaceTrack(peerConnection: RTCPeerConnection, track: MediaStreamTrack, kind: 'video' | 'audio') {
+    if (track) {
+        const sender = peerConnection.getSenders().find(sender => sender.track!.kind === kind);
+
+        if (!sender) {
+            console.warn(`No ${kind} sender found.`);
+            return;
+        }
+
+        try {
+            await sender.replaceTrack(track);
+            console.log(`${kind} track replaced.`);
+        } catch (error) {
+            console.error("Error replacing tracks:", error);
+            return null;
+        }
+    }
+}
+
+WebRTCService._initiazlize();

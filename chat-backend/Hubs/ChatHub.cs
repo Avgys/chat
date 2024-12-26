@@ -103,9 +103,6 @@ namespace chat_backend.Hubs
 
             var chat = await _chatService.Online.Chats.FindByIdAsync(chatId.ToString());
 
-            if (chat == null)
-                throw new KeyNotFoundException($"No chat with {chatId}");
-
             Offer answer;
 
             if (chat.IsGroup)
@@ -114,6 +111,11 @@ namespace chat_backend.Hubs
             }
             else
             {
+                var caller = await _chatService.GetUserContactByIdAsync(int.Parse(UserId));
+
+                offer.Contact = caller!;
+                offer.Contact.ChatId = chat.Id;
+
                 var receiveChatMember = chat.Participants.Single(x => x.UserId != callerId);
                 var receiverInfo = (await _chatService.Online.Users.FindByIdAsync(receiveChatMember.UserId.ToString()))
                     ?? throw new KeyNotFoundException($"No active user in chat");
