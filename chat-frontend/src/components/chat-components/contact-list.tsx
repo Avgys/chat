@@ -54,19 +54,19 @@ function ContactList() {
     const contactsToShow = useMemo(() => {
         const chats = unFilteredChats.filter(x => isEmptyOrSpaces(contactsFilter)
             ? !x.contact.IsStranger
-            : x.contact.Name.includes(contactsFilter));
+            : x.contact.Name?.includes(contactsFilter));
 
         const friends = chats
             .filter(x => !x.contact.IsStranger)
             .sort((a, b) =>
                 (a.contact.LastMessageUTC && b.contact.LastMessageUTC)
                     ? (new Date(a.contact.LastMessageUTC).getMilliseconds()! - new Date(b.contact.LastMessageUTC).getMilliseconds()!)
-                    : (a.contact.Name.localeCompare(b.contact.Name)))
+                    : (a.contact.Name!.localeCompare(b.contact.Name!)))
             .map(x => <Contact key={x?.contact.ChatId ?? -x.contact.UserId!} chat={x} isSelected={x == selectedChat} onSelect={onChatSelect} />)
 
         const strangers = chats
             .filter(x => x.contact.IsStranger)
-            .sort((a, b) => a.contact.Name.localeCompare(b.contact.Name))
+            .sort((a, b) => a.contact.Name!.localeCompare(b.contact.Name!))
             .map(x => <Contact key={x?.contact.ChatId ?? -x.contact.UserId!} chat={x} isSelected={x == selectedChat} onSelect={onChatSelect} />);
 
         return (<>
@@ -91,7 +91,7 @@ function Contact({ chat, isSelected, onSelect }: { chat: Chat, isSelected: boole
         onClick={() => onSelect(chat)}>
         <Avatar className="h-12 w-12">
             <AvatarImage src={chat.contact.AvatarSrc} alt={chat.contact.Name} />
-            <AvatarFallback>{chat.contact.Name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            <AvatarFallback>{chat.contact.Name?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
         <div className="ml-4 flex-1">
             <div className="flex justify-between items-baseline">

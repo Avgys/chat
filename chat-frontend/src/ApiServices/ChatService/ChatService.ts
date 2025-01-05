@@ -1,7 +1,7 @@
 import { CHAT_HUB, CHATS } from "@/apiPaths";
 import { ApiService } from "../ApiService";
 import { ContactModel, FixContactType } from "@/Models/Contact";
-import { ChatMessage, DirectMessage, MessageBase, MessageType } from "@/Models/Message";
+import { ContentMessage, MessageType } from "@/Models/Message";
 import { Chat } from "@/Models/Chat";
 import { SignalService } from "../SignalService/SignalService";
 import { AuthService } from "../AuthService/AuthService";
@@ -26,14 +26,14 @@ export class ChatService {
         return response;
     }
 
-    static async LoadMessages(chatId: number): Promise<ChatMessage[]> {
+    static async LoadMessages(chatId: number): Promise<ContentMessage[]> {
         const path = CHATS.CHAT_MESSAGES_PATH + `?chatId=${chatId}`;
-        const response = await ApiService.GET<ChatMessage[]>(path) ?? [];
+        const response = await ApiService.GET<ContentMessage[]>(path) ?? [];
         return response;
     }
 
     static async LoadParticipantsInChat(chatId: number): Promise<ContactModel[]> {
-        const path = CHATS.SEARCH_CONTACTS_PATH + `?chatId=${chatId}`;
+        const path = CHATS.CHAT_PARTICIPANTS_PATH + `?chatId=${chatId}`;
         const response = await ApiService.GET<ContactModel[]>(path) ?? [];
 
         response.forEach(x => FixContactType(x));
@@ -58,27 +58,18 @@ export class ChatService {
         };
     }
 
-    public static async sendMessage(messageText: string, contact: ContactModel): Promise<ChatMessage> {
-        const isChat = !!contact.ChatId;
-        let socketMethod: string;
-        let message: MessageBase;
+    public static async sendMessage(messageText: string, contact: ContactModel) {
+        const message: ContentMessage = {
+            Contact: contact,
+            Content: messageText,
+            TimeStampUtc: (new Date()).toISOString(),
+            Type: MessageType.Message,
+            SenderId: Number((await AuthService.GetTokenInfoAsync())!.UserId),
+        };
 
-        if (isChat) {
-            socketMethod = CHAT_HUB.SEND_CHAT_MESSAGE_METHOD;
-            message = { ChatId: contact.ChatId } as ChatMessage;
-        }
-        else {
-            socketMethod = CHAT_HUB.SEND_DIRECT_MESSAGE_METHOD;
-            message = { ReceiverId: contact.UserId } as DirectMessage;
-        }
+        const isMessageReceived = SignalService.sendRequest(CHAT_HUB.SEND_MESSAGE_METHOD, message)
+            .then(x => x?.Content === message.Content);
 
-        message.Content = messageText;
-        message.TimeStampUtc = (new Date()).toISOString();
-        message.Type = MessageType.Message;
-        message.SenderId = Number((await AuthService.GetTokenInfoAsync())!.UserId);
-
-        const chatId = await SignalService.sendRequest<number>(socketMethod, message) ?? -1;
-        
-        return { ...message, ChatId: chatId };
+        return { message, isMessageReceived };
     }
 }

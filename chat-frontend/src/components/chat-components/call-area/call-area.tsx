@@ -22,22 +22,26 @@ export function CallArea({ className }: { className: string }) {
   const [remoteStream, setRemoteStream] = useState<MediaStream>();
   const [localStream, setLocalStream] = useState<MediaStream>();
 
+  const [mediaPermissions, setMediaPermissions] = useState<MediaKind>({ audio: true, video: true });
+
   useEffect(() => {
-    WebRTCService.isUserAnswer = (contact) => (callingContact === undefined)
-      ? new Promise<MediaKind>((resolve, reject) => {
+    WebRTCService.getUserCallAccept = (contact) => (callingContact === undefined)
+      ? new Promise<boolean>((resolve, reject) => {
         setCallingContact({
-          contact, callback: (kind) => {
+          contact,
+          callback: (kind) => {
             setCallingContact(undefined);
-            resolve(kind)
+            setMediaPermissions(kind);
+            resolve(kind.audio === true);
           }
         })
       })
-      : new Promise<MediaKind>((resolve, reject) => {
+      : new Promise<boolean>((resolve, reject) => {
         setCallingContact(undefined);
-        resolve({ video: false, audio: false })
+        resolve(false)
       });
 
-    return () => { WebRTCService.isUserAnswer = null; }
+    return () => { WebRTCService.getUserCallAccept = null; }
   }, [chat]);
 
   const stopMedia = useCallback(() => {
@@ -46,11 +50,13 @@ export function CallArea({ className }: { className: string }) {
       setLocalStream(undefined);
     }
 
-    if (remoteStream)
+    if (remoteStream) {
       remoteStream.getTracks().forEach((track) => track.stop());
+      setRemoteStream(undefined);
+    }
 
     console.log("Screen sharing stopped.");
-  }, [localStream]);
+  }, [localStream, remoteStream]);
 
 
   useEffect(() => {
@@ -60,11 +66,19 @@ export function CallArea({ className }: { className: string }) {
 
       const localStream = await getLocalMedia();
       setLocalStream(localStream);
-      
+
       WebRTCService.setInputStream(fakeStream);
       WebRTCService.setOutputStream(localStream);
+
+      localStream.getTracks().forEach(track => {
+        track.onmute = () => console.log(`${track.kind} track is muted.`);
+        track.onunmute = () => console.log(`${track.kind} track is unmuted.`);
+        track.onended = () => console.log(`${track.kind} track has ended.`);
+      })
+
     };
 
+    WebRTCService.onClosed = stopCall;
   }, []);
 
   function stopCall() {
@@ -74,13 +88,14 @@ export function CallArea({ className }: { className: string }) {
   }
 
   return (callingContact || selectedCaller) && (
-    <div className={cn("min-w-64 h-full p-6 flex border-gray-700 border-r", className)}>
+    <div className={cn("min-w-128 p-6 flex border-gray-700 border-r", className)}>
       {callingContact && <AnswerCall callingContact={callingContact} />}
       {selectedCaller && <VoiceChat
         callerChat={selectedCaller}
         stopCall={stopCall}
         localStream={localStream!}
         remoteStream={remoteStream!}
+        initialPermissions={mediaPermissions}
       />}
     </div>
   );

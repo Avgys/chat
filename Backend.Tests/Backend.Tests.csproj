@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AuthService\AuthService.csproj" />
-    <ProjectReference Include="..\chat-backend\chat-backend.csproj" />
+    <ProjectReference Include="..\chat-backend\Chat.WebAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

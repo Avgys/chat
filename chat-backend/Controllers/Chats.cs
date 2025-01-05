@@ -1,9 +1,9 @@
-﻿
-using Auth.Shared.Misc;
-using chat_backend.Models;
-using chat_backend.Services;
+﻿using Auth.Shared.Misc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.Services;
+using Shared.Models;
+using Shared.Models.ContactModels;
 
 namespace chat_backend.Controllers
 {
@@ -44,12 +44,26 @@ namespace chat_backend.Controllers
         }
 
         [HttpGet("messages")]
-        public async Task<ActionResult<ChatMessageModel[]>> GetMessages([FromQuery] int chatId, [FromQuery] int count = 20, [FromQuery] int skipCount = 0)
+        public async Task<ActionResult<MessageModel[]>> GetMessages([FromQuery] int chatId, [FromQuery] int count = 20, [FromQuery] int skipCount = 0)
         {
+            if (!await _chatService.IsParticipantAsync(requestUserId, chatId))
+                return Unauthorized("Not participant of chat");
+
             var userId = int.Parse(HttpContext.User.Claims.Single(x => x.Type == AuthConsts.Claims.UserId)!.Value);
             var messages = await _chatService.GetMessages(userId, chatId, count, skipCount);
 
             return Ok(messages);
+        }
+
+        [HttpGet("participants")]
+        public async Task<ActionResult<MessageModel[]>> GetParticipants([FromQuery] int chatId)
+        {
+            if (!await _chatService.IsParticipantAsync(requestUserId, chatId))
+                return Unauthorized("Not participant of chat");
+            
+            var participants = await _chatService.GetParticipants(chatId);
+
+            return participants != null ? Ok(participants) : NotFound();
         }
     }
 }

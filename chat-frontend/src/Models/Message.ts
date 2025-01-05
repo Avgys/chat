@@ -1,20 +1,28 @@
-export interface MessageBase {
+import { ContactModel } from "./Contact";
+
+export interface Message {
     Id?: number;
-    Content: string;
-    Type: MessageType;
+    Contact: ContactModel;
+    Type: MessageType | InterClientMessageType;
     SenderId?: number;
     TimeStampUtc: string;
 }
 
-export interface ChatMessage extends MessageBase {
-    ChatId: number;
-}
-
-export interface DirectMessage extends MessageBase {
-    ReceiverId: number;
+export interface ContentMessage extends Message {
+    Content: string;
 }
 
 export enum MessageType {
     'Message',
-    'IceCandidate'
+    'IceCandidate',
+    'Offer',
+    'Answer',
+    'CloseConnection',
+}
+
+export enum InterClientMessageType {
+    'Connected',
+    'Disconnected', 
+    'Inform',
+    'MediaChange'
 }

@@ -1,11 +1,11 @@
-﻿using chat_backend.Models;
-using chat_backend.Models.RedisModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.Models;
-using System.Linq.Expressions;
+using Repositories.Models.Redis;
+using Shared.Models;
+using Shared.Models.ContactModels;
 
-namespace chat_backend.Services
+namespace Repositories.Services
 {
     public class ChatService(DatabaseContext dbContext, RedisService redisService)
     {
@@ -44,7 +44,7 @@ namespace chat_backend.Services
                 .OrderBy(x => x.Name)
                 .ToArrayAsync();
 
-            var chatModels = fetchedChats.Select(x => new ContactModel
+            var chatModels = fetchedChats.Select(x => new ContactListModel
             {
                 UserId = x.UserId,
                 ChatId = x.ChatId,
@@ -97,7 +97,7 @@ namespace chat_backend.Services
                 .ToArrayAsync();
 
 
-            var contacts = fetchedData.Select(x => new ContactModel
+            var contacts = fetchedData.Select(x => new ContactListModel
             {
                 UserId = x.UserId != -1 ? x.UserId : null,
                 ChatId = x.ChatId != -1 ? x.ChatId : null,
@@ -131,7 +131,7 @@ namespace chat_backend.Services
             if (chat == null)
                 return null;
 
-            ContactModel contact = new()
+            ContactListModel contact = new()
             {
                 ChatId = chat.Id,
                 UserId = chat.UserId == -1 ? null : chat.UserId,
@@ -145,7 +145,7 @@ namespace chat_backend.Services
             return contact;
         }
 
-        internal async Task<IEnumerable<ChatMessageModel>> GetMessages(int userId, int chatId, int count, int skipCount)
+        public async Task<IEnumerable<MessageModel>> GetMessages(int userId, int chatId, int count, int skipCount)
         {
             var fetchedData = await _dbContext.ChatToUser
                 .Where(x => x.UserId == userId && x.ChatId == chatId)
@@ -167,10 +167,10 @@ namespace chat_backend.Services
 
             var messages = fetchedData
                 .OrderBy(x => x.Id)
-                .Select(m => new ChatMessageModel
+                .Select(m => new MessageModel
                 {
                     Id = m.Id,
-                    ChatId = m.ChatId,
+                    Contact = new ContactModel { ChatId = m.ChatId },
                     SenderId = m.SenderId,
                     Content = m.Text,
                     TimeStampUtc = m.TimeStampUtc,
@@ -179,32 +179,16 @@ namespace chat_backend.Services
             return messages;
         }
 
-        internal async Task SaveMessageAsync(Message message)
+        public async Task SaveMessageAsync(Message message)
         {
             await _dbContext.Messages.AddAsync(message);
             await _dbContext.SaveChangesAsync();
         }
 
-        internal Task<Chat[]> FindChatsAsync(Expression<Func<Chat, bool>> predicate)
+        public async Task<bool> IsParticipantAsync(int senderId, int chatId)
         {
-            return _dbContext.Chats
-                .Where(predicate)
-                .Include(x => x.Users)
-                //.Select(x => new { x.Id, x.IsGroup, Users = x.Users.Select(y => y.Id) })
-                .ToArrayAsync();
-        }
-
-        internal Task<int[]> FindChatIdsAsync(Expression<Func<ChatToUser, bool>> predicate)
-        {
-            return _dbContext.ChatToUser
-                .Where(predicate)
-                .Select(x => x.ChatId)
-                .ToArrayAsync();
-        }
-
-        internal async Task<bool> IsParticipantAsync(int senderId, int chatId)
-        {
-            return await _redisService.IsParticipantAsync(senderId, chatId) || await _dbContext.Chats.Include(x => x.Users).AnyAsync(x => x.Id == chatId && x.Users.Any(user => user.Id == senderId));
+            return await _redisService.IsParticipantAsync(senderId, chatId)
+                || await _dbContext.Chats.Include(x => x.Users).AnyAsync(x => x.Id == chatId && x.Users.Any(user => user.Id == senderId));
         }
 
         public async Task<bool> IsGroup(int chatId)
@@ -249,7 +233,7 @@ namespace chat_backend.Services
                                             && x.Users.Any(x => x.Id == userId));
         }
 
-        internal async Task<int> GetOrAddDirectChatAsync(int callerId, int userId)
+        public async Task<int> GetOrAddDirectChatAsync(int callerId, int userId)
         {
             var chat = await FindExistingChatAsync(callerId, userId);
 
@@ -257,7 +241,7 @@ namespace chat_backend.Services
                 return chat.Id;
 
             var createdChat = await CreateDirectChatAsync(callerId, userId);
-            
+
             await Online.LoadAndJoinChat(createdChat, callerId, userId);
 
             return createdChat.Id;
@@ -265,10 +249,10 @@ namespace chat_backend.Services
 
         private async Task<Chat> CreateDirectChatAsync(int callerId, int userId)
         {
-            var users = (await _dbContext.Users
+            var users = await _dbContext.Users
                   .Where(x => x.Id == callerId || x.Id == userId)
                   //.Select(x => x.Id)   //Uneccessary optimization to reduce fetched data              
-                  .ToListAsync());
+                  .ToListAsync();
             //.Select(x => new User() { Id = x })
             //.ToList();
 
@@ -283,11 +267,14 @@ namespace chat_backend.Services
             return chat;
         }
 
-        internal async Task<IEnumerable<string>> JoinOrLoadChatsAsync(int userId, string connectionId)
+        public async Task<IEnumerable<string>> JoinOrLoadChatsAsync(int userId, string connectionId)
         {
-            var chatIds = (await FindChatIdsAsync(x => x.UserId == userId))
-               .Select(x => x.ToString())
-               .ToArray();
+            var chatIds = (await _dbContext.ChatToUser
+                .Where(x => x.UserId == userId)
+                .Select(x => x.ChatId)
+                .ToArrayAsync())
+                .Select(x => x.ToString())
+                .ToArray();
 
             var redisUser = new RedisUser { Id = userId, ChatIds = chatIds, ConnectionId = connectionId };
 
@@ -309,22 +296,30 @@ namespace chat_backend.Services
 
         async Task LoadChatsAsync(IEnumerable<int> unloadedChats, int userId)
         {
-            var dbChats = await FindChatsAsync(x => unloadedChats.Contains(x.Id));
-            var redisChats = dbChats.Select(x => new RedisChat(x));
+            var dbChats = await _dbContext.Chats
+                .Where(x => unloadedChats.Contains(x.Id))
+                .Include(x => x.Users)
+                //.Select(x => new { x.Id, x.IsGroup, Users = x.Users.Select(y => y.Id) })
+                .ToArrayAsync(); ;
+
+            var redisChats = dbChats
+                .Select(x => new RedisChat(x))
+                .ToArray();
+
             foreach (var chat in redisChats)
                 chat.UpdateParticipant(userId, true);
 
             await _redisService.Chats.InsertAsync(redisChats);
         }
 
-        internal async Task<ContactModel?> GetUserContactByIdAsync(int? userId)
+        public async Task<ContactModel?> GetUserContactByIdAsync(int? userId)
         {
             var user = await _dbContext.Users
                 .Where(x => x.Id == userId)
                 .Select(x => new
                 {
                     x.Id,
-                    x.Name,                   
+                    x.Name,
                     AvatarSrc = "ImageSrcPlate"
                 })
                 .SingleOrDefaultAsync();
@@ -332,7 +327,7 @@ namespace chat_backend.Services
             if (user == null)
                 return null;
 
-            ContactModel contact = new()
+            ContactListModel contact = new()
             {
                 UserId = user.Id,
                 Name = user.Name,
@@ -341,6 +336,54 @@ namespace chat_backend.Services
             };
 
             return contact;
+        }
+
+        public async Task<ContactModel[]?> GetParticipants(int chatId)
+        {
+            var chat = await _redisService.Chats.FindByIdAsync(chatId.ToString());
+            IEnumerable<int> onlineParticipants;
+            IEnumerable<User> participants;
+
+            if (chat != null)
+            {
+                var participantIds = chat.Participants.Select(x => x.UserId);
+
+                participants = await _dbContext.Users
+                   .Where(x => participantIds.Contains(x.Id))
+                   .ToArrayAsync();
+
+                onlineParticipants = chat.Participants
+                    .Where(x => x.IsOnline)
+                    .Select(x => x.UserId)
+                    .ToArray();
+            }
+            else
+            {
+                participants = await _dbContext.Chats
+                    .Where(x => x.Id == chatId)
+                    .Include(x => x.Users)
+                    .SelectMany(x => x.Users)
+                    .ToArrayAsync();
+
+                onlineParticipants = await _redisService.Users
+                    .FindByIdsAsync(participants
+                        .Select(x => x.Id.ToString()))
+                    .ContinueWith(x => x.Result
+                    .Where(y => y.Value != null)
+                    .Select(y => y.Value!.Id));
+            }
+
+            var result = participants
+                .Select(x => new ContactModel
+                {
+                    UserId = x.Id,
+                    Name = x.Name,
+                    AvatarSrc = "ImageSrcPlate",
+                    IsOnline = onlineParticipants.Any(y => y == x.Id),
+                })
+                .ToArray();
+
+            return result;
         }
     }
 }

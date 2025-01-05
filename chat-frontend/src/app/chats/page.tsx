@@ -8,7 +8,7 @@ import ContactList from "@/components/chat-components/contact-list";
 import { Chat } from "@/Models/Chat";
 import { ContactModel } from "@/Models/Contact";
 import { MediaKind } from "@/Models/MediaKind";
-import { ChatMessage } from "@/Models/Message";
+import { ContentMessage } from "@/Models/Message";
 import { useAppSelector, useAppStore } from "@/store/hooks";
 import { addChats, addMessage, getCurrentCallChat, getCurrentChat, updateOrAddChat } from "@/store/slice";
 import { useContext, useEffect, useState } from "react";
@@ -46,13 +46,13 @@ export default function ChatComponent() {
   }, [isAuth]);
 
 
-  async function AddMessage(newMessage: ChatMessage) {
+  async function AddMessage(newMessage: ContentMessage) {
     const chats = store.getState().chatState.chats;
 
-    let cachedChat = chats.find(x => x.contact.ChatId == newMessage.ChatId);
+    let cachedChat = chats.find(x => x.contact.ChatId == newMessage.Contact.ChatId);
 
     if (!cachedChat?.messages) {
-      const loadedChat = await ChatService.LoadChat(newMessage.ChatId);
+      const loadedChat = await ChatService.LoadChat(newMessage.Contact.ChatId!);
       store.dispatch(updateOrAddChat(loadedChat));
     }
     else {
@@ -66,13 +66,13 @@ export default function ChatComponent() {
       {isAuth && initiated &&
         <div className="flex bg-gray-900 text-gray-100 h-screen">
           <ContactList />
-          <div className="flex flex-col w-full h-screen">
+          <div className="flex flex-col w-full h-full">
             {selectedChat && <ContactInfo selectedChat={selectedChat} isInCall={!!currentCall} />}
-            <div className="flex w-full h-full overflow-auto">
-              <CallArea className="flex-1 min-w-1/2"/>
+            <div className="flex w-full h-[95%]">
+              <CallArea className="flex-1 h-full min-w-1/2"/>
               {selectedChat
                 ? <ChatArea className="flex-1" chat={selectedChat} />
-                : <div className="h-full flex-1 w-full flex items-center justify-center text-gray-400">
+                : <div className="h-full w-full flex-1 w-full flex items-center justify-center text-center text-gray-400">
                     Select a contact to start chatting
                   </div>}
             </div>

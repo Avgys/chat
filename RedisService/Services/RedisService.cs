@@ -1,16 +1,19 @@
-﻿using chat_backend.Models.RedisModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Persistence.Models;
+using Redis.OM;
 using Redis.OM.Searching;
+using Repositories.HostedServices;
+using Repositories.Models.Redis;
 
-namespace chat_backend.Services
+namespace Repositories.Services
 {
     public class RedisService(IRedisCollection<RedisUser> users, IRedisCollection<RedisChat> chats)
     {
         public readonly IRedisCollection<RedisUser> Users = users;
         public readonly IRedisCollection<RedisChat> Chats = chats;
 
-        internal async Task RemoveOfflineUserFromChatsAsync(RedisUser user)
+        public async Task RemoveOfflineUserFromChatsAsync(RedisUser user)
         {
             var chats = (await Chats.FindByIdsAsync(user.ChatIds))
                 .Where(x => x.Value != null)
@@ -24,7 +27,7 @@ namespace chat_backend.Services
 
             foreach (var chat in chats)
             {
-                if (chat.Participants.Count(y => y.IsActive) == 0)
+                if (chat.Participants.Count(y => y.IsOnline) == 0)
                     chatsToDelete.Add(chat);
                 else
                     chatsToUpdate.Add(chat);
@@ -52,7 +55,7 @@ namespace chat_backend.Services
                 .ToArray();
 
             foreach (var item in redisChat.Participants)
-                item.IsActive = activeUsers.Any(y => y.Id == item.UserId);
+                item.IsOnline = activeUsers.Any(y => y.Id == item.UserId);
 
             await Chats.InsertAsync(redisChat);
 
@@ -68,6 +71,18 @@ namespace chat_backend.Services
                 loadedChat.UpdateParticipant(userId, isActive);
 
             await Chats.UpdateAsync(loadedChats);
+        }
+    }
+
+    public static class RedisExtensions
+    {
+        public static void AddRedis(this IServiceCollection serviceCollection, IConfiguration configuration)
+        {
+            //Redis services
+            serviceCollection.AddSingleton(new RedisConnectionProvider(configuration.GetConnectionString("Redis")!));
+            serviceCollection.AddHostedService<IndexCreationService>();
+            serviceCollection.AddScoped(typeof(IRedisCollection<RedisUser>), s => s.GetRequiredService<RedisConnectionProvider>().RedisCollection<RedisUser>());
+            serviceCollection.AddScoped(typeof(IRedisCollection<RedisChat>), s => s.GetRequiredService<RedisConnectionProvider>().RedisCollection<RedisChat>());
         }
     }
 }

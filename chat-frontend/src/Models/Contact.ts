@@ -1,11 +1,11 @@
 export type ContactModel = {
-  UserId: number | null,
-  ChatId: number | null,
-  Name: string,
-  AvatarSrc: string,
+  UserId?: number,
+  ChatId?: number,
+  Name?: string,
+  AvatarSrc?: string,
   LastMessage?: string,
   LastMessageUTC?: string,
-  IsStranger: boolean
+  IsStranger?: boolean
 }
 
 export function FixContactType(contact: ContactModel) {

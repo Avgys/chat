@@ -1,11 +1,9 @@
+using Auth.Shared;
 using AuthService.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
 using Persistence;
 using Shared.BuilderConfig;
-using System.Text;
 
 namespace AuthService;
 
@@ -19,9 +17,10 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            logger.Info("Enviromnet: " + builder.Environment.EnvironmentName);
             var appsettingsFilename = $"appsettings.{builder.Environment.EnvironmentName}.json";
             builder.Configuration.AddJsonFile(appsettingsFilename, optional: true, reloadOnChange: true);
-            Console.WriteLine(appsettingsFilename);
+
             builder.Logging.ClearProviders();
             builder.Host.UseNLog();
 
@@ -34,27 +33,13 @@ public class Program
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthenticateService>();
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-               .AddJwtBearer(options =>
-               {
-                   options.TokenValidationParameters = new TokenValidationParameters
-                   {
-                       ValidateIssuer = true,
-                       ValidateAudience = true,
-                       ValidateLifetime = true,
-                       ValidateIssuerSigningKey = true,
-                       ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
-                       ValidAudience = builder.Configuration["Jwt:Audience"]!,
-                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-                   };
-
-               });
+            builder.Services.AddJwtAuthentication(builder.Configuration);
 
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
-            app.UseCommonMiddleware();
+            app.UseCommonContollerMiddleware();
 
             app.Run();
         }

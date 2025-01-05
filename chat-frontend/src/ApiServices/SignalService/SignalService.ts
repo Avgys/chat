@@ -3,17 +3,16 @@ import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from
 import { AuthService } from "../AuthService/AuthService";
 
 import URLS from "@/urls";
-import { ChatMessage, MessageType } from "@/Models/Message";
-import { SDPMessage } from "@/Models/SDPMessage";
+import { ContentMessage, Message, MessageType } from "@/Models/Message";
 import { CHAT_HUB } from "@/apiPaths";
 
 export class SignalService {
     private static currentConnection: HubConnection | null;
 
-    public static onMessageReceive: ((newMessage: ChatMessage) => void) | null = null;
+    public static onMessageReceive: ((newMessage: ContentMessage) => void) | null = null;
 
-    public static onOfferReceive: ((offer: SDPMessage) => Promise<SDPMessage>) | null = null;
-    public static onRemoteIceCandidateOffer: ((offer: ChatMessage) => void) | null = null;
+    public static onOfferReceive: ((offer: ContentMessage) => Promise<ContentMessage>) | null = null;
+    public static onRemoteIceCandidateOffer: ((offer: ContentMessage) => void) | null = null;
 
     static async connectToServer() {
         console.debug('initiating ws connection');
@@ -42,30 +41,38 @@ export class SignalService {
     }
 
     static SetHandlers(connection: HubConnection) {
-        connection.on('ReceiveMessage', (data: any) => this.RouteMessage(data));
-        connection.on('ReceiveOffer', async (data: any) => { return this.onOfferReceive && this.onOfferReceive(data) });
+        connection.on('receivemessage', (data: any) => this.RouteMessage(data));
+        connection.on('receiverequest', async (data: any) => { return this.onOfferReceive && this.onOfferReceive(data) });
 
         connection.onclose(async () => {
             console.error('SignalR connection close');
         });
     }
 
-    static RouteMessage(newMessage: ChatMessage) {
-        if (newMessage.Type == MessageType.Message) {
-            this.onMessageReceive && this.onMessageReceive(newMessage);
+    static RouteMessage(newMessage: ContentMessage) {
+        if (newMessage.Type == MessageType.Message && this.onMessageReceive) {
+            this.onMessageReceive(newMessage);
         }
-        else if (newMessage.Type == MessageType.IceCandidate) {
-            this.onRemoteIceCandidateOffer && this.onRemoteIceCandidateOffer(newMessage);
+        else if (newMessage.Type == MessageType.IceCandidate && this.onRemoteIceCandidateOffer) {
+            this.onRemoteIceCandidateOffer(newMessage);
         }
     }
 
-    public static async sendRequest<T>(methodName: string, data: any) {
+    public static async sendRequest(methodName: string, data: Message): Promise<ContentMessage | null> {
+        if (!this.currentConnection) {
+            await this.connectToServer();
+        }
+
         try {
-            return await this.currentConnection?.invoke<T>(methodName, data);
+            return await this.currentConnection!.invoke<ContentMessage>(methodName, data);
         }
         catch (err) {
             console.error(err);
             return null;
         }
     }
+}
+
+function useSignalService() {
+
 }

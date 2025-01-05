@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "chat-backend", "chat-backend\chat-backend.csproj", "{16375CA4-0A3A-4487-84EC-6EA767414F52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat.WebAPI", "chat-backend\Chat.WebAPI.csproj", "{16375CA4-0A3A-4487-84EC-6EA767414F52}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\Persistence.csproj", "{7AF0C649-62B6-49B0-AC31-19620BC4E94E}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthService", "AuthService\AuthService.csproj", "{6D07858C-F033-4EE9-A31D-A2C618EC4F8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Auth.Shared", "Auth.Shared\Auth.Shared.csproj", "{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat.SignalR", "Chat.Hub\Chat.SignalR.csproj", "{A7D1E1E8-EE7C-4571-A676-A975A8E68979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "RedisService\Repositories.csproj", "{00EC716E-BA1B-4A73-A053-1BD7E63866AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +75,22 @@ Global
 		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.LocalDocker|Any CPU.Build.0 = Release|Any CPU
 		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BAC5A9D-93E3-4CDA-BCB8-87CE20CE9109}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.LocalDocker|Any CPU.ActiveCfg = LocalDocker|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.LocalDocker|Any CPU.Build.0 = LocalDocker|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7D1E1E8-EE7C-4571-A676-A975A8E68979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Docker|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Docker|Any CPU.Build.0 = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.LocalDocker|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.LocalDocker|Any CPU.Build.0 = Debug|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EC716E-BA1B-4A73-A053-1BD7E63866AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

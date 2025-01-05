@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from './store'
 import { Chat } from '@/Models/Chat'
-import { ChatMessage } from '@/Models/Message'
+import { ContentMessage } from '@/Models/Message'
 import { ContactModel } from '@/Models/Contact'
 
 interface ChatsState {
@@ -9,11 +9,14 @@ interface ChatsState {
     currentChatIndex?: number | undefined,
 
     currentCallChatIndex?: number | undefined,
-    localMediaStream?: MediaStream | undefined
+    localMediaStream?: MediaStream | undefined,
+
+    users: ContactModel[];
 }
 
 const initialState: ChatsState = {
     chats: [],
+    users: []
 }
 
 const chatSlice = createSlice({
@@ -21,22 +24,22 @@ const chatSlice = createSlice({
     // `createSlice` will infer the state type from the `initialState` argument
     initialState,
     reducers: {
-        addMessage: (state, action: PayloadAction<ChatMessage>) => {
-            const messsage = action.payload;
-            const chat = state.chats.find(x => x.contact.ChatId == messsage.ChatId);
+        addMessage: (state, action: PayloadAction<ContentMessage>) => {
+            const message = action.payload;
+            const chat = state.chats.find(x => x.contact.ChatId == message.Contact.ChatId);
 
             if (!chat?.messages)
                 return;
 
-            if (messsage.Id == null)
-                messsage.Id = Math.max(...chat.messages.map(x => x.Id as number)) + 1;
+            if (message.Id == null)
+                message.Id = Math.max(...chat.messages.map(x => x.Id as number)) + 1;
 
-            chat.messages.push(messsage);
+            chat.messages.push(message);
 
             chat!.contact = {
                 ...chat!.contact,
-                LastMessage: messsage.Content,
-                LastMessageUTC: messsage.TimeStampUtc
+                LastMessage: message.Content,
+                LastMessageUTC: message.TimeStampUtc
             };
         },
         addChats: (state, action: PayloadAction<Chat[]>) => {

@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace Persistence.Models
+﻿namespace Shared.Models
 {
     public interface IChat
     {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FormatStringDate } from '@/Models/FormatStringDate'
-import { ChatMessage } from "@/Models/Message"
+import { ContentMessage } from "@/Models/Message"
 import { Send } from "lucide-react"
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { AuthContext } from "../authComponent"
@@ -31,7 +31,10 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
     if (chat == null || !(chat.contact.ChatId ?? chat.contact.UserId))
       return;
 
-    ChatService.sendMessage(messageText, chat.contact).then(message => {
+
+
+    ChatService.sendMessage(messageText, chat.contact).then(result => {
+      const { message, isMessageReceived } = result;
       dispatch(addMessage(message));
       messageEndRef.current!.scrollIntoView();
     });
@@ -72,7 +75,7 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
   </>);
 }
 
-function MessageComponent({ message, isSender }: { message: ChatMessage, isSender: boolean }) {
+function MessageComponent({ message, isSender }: { message: ContentMessage, isSender: boolean }) {
   return <div
     key={message.Id}
     className={`flex ${isSender ? 'justify-end' : 'justify-start'} my-5`}>

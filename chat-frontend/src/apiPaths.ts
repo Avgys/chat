@@ -14,7 +14,6 @@ export abstract class CHATS {
 
 export abstract class CHAT_HUB {
     static HUB_PATH = '/api/hubs/chat';
-    static SEND_CHAT_MESSAGE_METHOD = 'SendChatMessage';
-    static SEND_DIRECT_MESSAGE_METHOD = 'SendDirectMessage';
-    static START_PEER_CONNECTION_METHOD = 'StartPeerConnection';
+    static SEND_MESSAGE_METHOD = 'SendMessage';
+    static SEND_REQUEST_METHOD = 'SendRequest';
 }

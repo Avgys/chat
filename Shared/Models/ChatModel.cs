@@ -1,6 +1,8 @@
-﻿namespace chat_backend.Models
+﻿using Shared.Models.ContactModels;
+
+namespace Shared.Models
 {
-    public record struct ChatModel 
+    public record struct ChatModel
     {
         public int ChatId;
         public string Name;

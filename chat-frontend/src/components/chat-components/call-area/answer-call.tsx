@@ -2,23 +2,21 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { Button } from "../../ui/button";
-import {  Phone,  PhoneOff, Camera } from 'lucide-react'
+import { Phone, PhoneOff, Camera } from 'lucide-react'
 import { useCallback, } from "react";
 import { MediaKind } from "../../../Models/MediaKind";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
-import { findChatByContact, findChatById, selectCaller, selectChat, updateOrAddChat } from "@/store/slice";
+import { useAppDispatch, useAppSelector, } from "@/store/hooks";
+import { findChatByContact, selectCaller, updateOrAddChat } from "@/store/slice";
 import { ChatService } from "@/ApiServices/ChatService/ChatService";
 import { CallContact } from "./call-area";
 
-export default function AnswerCall({callingContact} : {callingContact : CallContact}) {
+export default function AnswerCall({ callingContact }: { callingContact: CallContact }) {
 
     const dispatch = useAppDispatch();
-    const chatState = useAppSelector(x => x.chatState);    
+    const chatState = useAppSelector(x => x.chatState);
 
     const answerCall = useCallback(async (pesmissions: MediaKind) => {
         if (callingContact) {
-            callingContact.callback(pesmissions);
-
             if (pesmissions.audio || pesmissions.video) {
                 let loadedChat = findChatByContact(chatState, callingContact.contact);
 
@@ -31,25 +29,28 @@ export default function AnswerCall({callingContact} : {callingContact : CallCont
                 }
 
                 dispatch(selectCaller(loadedChat));
-            }            
+            }
+            
+            callingContact.callback(pesmissions);
         }
     }, [callingContact]);
 
     return callingContact && (
         <div className="flex-1 flex flex-col items-center justify-center bg-gray-900 ">
-            <Avatar className="w-full">
+            <h2 className="text-base sm:text-lg md:text-2xl lg:text-4xl xl:text-6xl font-bold text-gray-100">{callingContact.contact.Name}</h2>
+            <Avatar className="w-full m-4">
                 <AvatarImage src={'face.jpeg'} alt={callingContact.contact.Name} />
-                <AvatarFallback>{callingContact.contact.Name.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback>{callingContact.contact.Name?.slice(0, 2)}</AvatarFallback>
             </Avatar>
             <div className="space-x-4">
                 <Button variant="ghost" size="icon" onClick={() => answerCall({ audio: true, video: true })}>
                     <Camera className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" >
-                    <Phone className="h-4 w-4" onClick={() => answerCall({ audio: true, video: false })} />
+                <Button variant="ghost" size="icon" onClick={() => answerCall({ audio: true, video: false })} >
+                    <Phone className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" >
-                    <PhoneOff className="h-4 w-4" onClick={() => answerCall({ audio: false, video: false })} />
+                <Button variant="ghost" size="icon" onClick={() => answerCall({ audio: false, video: false })} >
+                    <PhoneOff className="h-4 w-4" />
                 </Button>
             </div>
         </div>

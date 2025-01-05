@@ -3,30 +3,64 @@
 import { Chat } from "@/Models/Chat";
 import { Button } from "../../ui/button";
 import { Mic, MicOff, PhoneOff, Camera, CameraOff, Volume2 } from 'lucide-react'
-import {  useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC";
 import { Slider } from "../../ui/slider";
 import { Caller } from "./caller-icon";
-import { modifyVolumeStream, getLocalMedia } from "@/lib/utils";
+import { modifyVolumeStream } from "@/lib/utils";
+import { MediaKind } from "@/Models/MediaKind";
+import { ContentMessage, InterClientMessageType } from "@/Models/Message";
 
-export default function VoiceChat({ callerChat, stopCall, localStream, remoteStream }
+export default function VoiceChat({ callerChat, stopCall, localStream, remoteStream, initialPermissions }
     : {
         callerChat: Chat
         , stopCall: () => void
         , localStream: MediaStream
         , remoteStream: MediaStream
+        , initialPermissions: MediaKind
     }) {
 
-    const [isAudio, setIsAudio] = useState(true);
-    const [isVideo, setIsVideo] = useState(true);
+    const [mediaPermissions, setMediaPermissions] = useState<MediaKind>(initialPermissions);
+
+    useEffect(() => {
+        setMediaPermissions(initialPermissions)
+    }, [initialPermissions]);
+
+    const sendPermissions = useCallback((newPermissions: MediaKind) => {
+        const message: ContentMessage = {
+            Contact: {},
+            Type: InterClientMessageType.MediaChange,
+            Content: JSON.stringify(newPermissions),
+            TimeStampUtc: (new Date()).toISOString()
+        };
+
+        WebRTCService.sendPeerMessage(message);
+    }, []);
+
+    const toggleMedia = useCallback((permissions: MediaKind) => {
+        let newPermissions: any = undefined;
+        if (permissions.audio)
+            setMediaPermissions(prevState => {
+                newPermissions = { ...prevState, audio: !prevState.audio };
+                return newPermissions;
+            })
+        else if (permissions.video)
+            setMediaPermissions(prevState => {
+                newPermissions = { ...prevState, video: !prevState.video };
+                return newPermissions;
+            });
+
+    }, [setMediaPermissions])
 
     useEffect(() => {
         if (!localStream)
             return;
 
-        localStream.getAudioTracks().forEach(x => x.enabled = isAudio);
-        localStream.getVideoTracks().forEach(x => x.enabled = isVideo);
-    }, [isAudio, isVideo]);
+        localStream.getAudioTracks().forEach(x => x.enabled = mediaPermissions.audio!);
+        localStream.getVideoTracks().forEach(x => x.enabled = mediaPermissions.video!);
+
+        sendPermissions(mediaPermissions);
+    }, [mediaPermissions]);
 
     function changeValue(value: number) {
         const modifiedStream = modifyVolumeStream(localStream, value);
@@ -34,23 +68,23 @@ export default function VoiceChat({ callerChat, stopCall, localStream, remoteStr
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full items-center justify-center bg-gray-900">
-            <Caller contact={callerChat.contact} stream={remoteStream} controls={true} />
+        <div className="flex-1 flex flex-col max-h-full h-full items-center justify-center bg-gray-900">
+            <Caller contact={callerChat.contact} stream={remoteStream} controls={true} userAudio={true} userVideo={false} />
             {/*LocalCaller */}
-            <div className="space-x-4 m-y-16">
-                <Button variant="ghost" size="icon" onClick={() => setIsAudio(prevState => !prevState)}>
-                    {isAudio ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+            <div className="space-x-4 m-y-16 flex-2">
+                <Button variant="ghost" size="icon" onClick={() => toggleMedia({ audio: true })}>
+                    {mediaPermissions.audio ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => setIsVideo(prevState => !prevState)}>
-                    {isVideo ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
+                <Button variant="ghost" size="icon" onClick={() => toggleMedia({ video: true })}>
+                    {mediaPermissions.video ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
                 </Button>
                 <Button variant="destructive" size="icon" onClick={stopCall} >
-                    <PhoneOff className="h-4 w-4"/>
+                    <PhoneOff className="h-4 w-4" />
                 </Button>
+                <VolumeSlider defaultValue={100} onChange={changeValue} />
             </div>
-            <VolumeSlider defaultValue={100} onChange={changeValue} />
-            <Caller userAudio={false} userVideo={isVideo} stream={localStream} controls={false} />
-        </div>
+            {mediaPermissions.video! && <Caller userAudio={false} userVideo={mediaPermissions.video!} stream={localStream} controls={false} />}
+        </div >
     )
 }
 

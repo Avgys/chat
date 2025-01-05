@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Shared.Misc;
 
 namespace Shared.BuilderConfig
@@ -29,7 +31,12 @@ namespace Shared.BuilderConfig
                     .AllowCredentials());
             });
 #endif
-            
+
+            return services;
+        }
+
+        public static IServiceCollection AddSharedContollerServices(this IServiceCollection services)
+        {
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -40,7 +47,7 @@ namespace Shared.BuilderConfig
             return services;
         }
 
-        public static IApplicationBuilder UseCommonMiddleware(this WebApplication app)
+        public static IApplicationBuilder UseCommonContollerMiddleware(this WebApplication app)
         {
             if (app.Environment.IsDevelopment())
             {
@@ -55,6 +62,12 @@ namespace Shared.BuilderConfig
             app.MapControllers();
 
             return app;
+        }
+
+        public static void AddAppSettingsJSONFile(this WebApplicationBuilder builder)
+        {            
+            var appsettingsFilename = $"appsettings.{builder.Environment.EnvironmentName}.json";
+            builder.Configuration.AddJsonFile(appsettingsFilename, optional: true, reloadOnChange: true);
         }
     }
 }
