@@ -1,44 +1,45 @@
-import { AuthService } from "./AuthService/AuthService";
+import { injectable } from "inversify";
+import { cookieInclude } from "./AuthService/AuthCookieMiddleware";
 
 type Method = 'GET' | 'POST' | 'DELETE' | 'PATCH';
 
+@injectable()
 export class ApiService {
 
-  static JsonHeader = new Headers({ 'Content-type': 'application/json' });
+  middlewares: ((url: string, request: RequestInit) => Promise<void>)[] = [cookieInclude];
 
-  public static async DELETE<T>(url: string) {
+  JsonHeader = new Headers({ 'Content-type': 'application/json' });
+
+  public async DELETE<T>(url: string) {
     return await this.SendRequest<T>(url, 'DELETE');
   }
 
-  public static async PATCH<T>(url: string, payload: any) {
+  public async PATCH<T>(url: string, payload: any) {
     return await this.SendRequest<T>(url, 'PATCH', this.JsonHeader, payload);
   }
 
-  public static async POST<T>(url: string, payload: any) {
+  public async POST<T>(url: string, payload: any) {
     return await this.SendRequest<T>(url, 'POST', this.JsonHeader, payload);
   }
 
-  public static async GET<T>(url: string) {
+  public async GET<T>(url: string) {
     return await this.SendRequest<T>(url, 'GET');
   }
 
-  private static async SendRequest<T>(url: string, method: Method, headers?: Headers, body?: any): Promise<T | null> {
+  private async SendRequest<T>(url: string, method: Method, headers?: Headers, body?: any): Promise<T | null> {
     try {
-      const bearer = await AuthService.TryGetBearerHeader(url);
-      if (bearer !== null) {
-        headers = new Headers(headers);
-        headers.append(bearer.header, bearer.value);
-      }
 
-      const CredentialsMode = AuthService.GetCookieMode(url);
-      
-      console.log('Cookie mode: ' + CredentialsMode)
-      const response = await fetch(url, {
+      const request = {
         method: method,
         headers: headers,
         body: JSON.stringify(body),
-        credentials: CredentialsMode
-      });
+      }
+
+      for (let index in this.middlewares) {
+        await this.middlewares[index](url, request);
+      }
+
+      const response = await fetch(url, request);
 
       if (!response.ok) {
         console.error('Error:', `HTTP error! Status: ${response.status}, to URL ${url}`);

@@ -42,13 +42,17 @@ export async function getLocalMedia() {
   try {
     //const videoStream = await navigator.mediaDevices.getDisplayMedia();
     const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    // Add audio tracks
-    audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
     // Add video tracks
     videoStream.getVideoTracks().forEach(track => combinedStream.addTrack(track));
 
+  } catch (err) {
+    console.error(err);
+  }
+
+  try {
+    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Add audio tracks
+    audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
   } catch (err) {
     console.error(err);
   }
@@ -86,3 +90,4 @@ export const modifyVolumeStream = (() => {
     return newStream;
   };
 })();
+

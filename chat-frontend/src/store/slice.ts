@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from './store'
-import { Chat } from '@/Models/Chat'
-import { ContentMessage } from '@/Models/Message'
-import { ContactModel } from '@/Models/Contact'
+import { Chat } from '@/models/Chat'
+import { ContentMessage } from '@/models/Message'
+import { ContactModel } from '@/models/Contact'
 
 interface ChatsState {
     chats: Chat[],
@@ -87,8 +87,7 @@ export function getCurrentCallChat(state: ChatsState) {
 }
 
 function findChatIndexByContact(chats: Chat[], contact: ContactModel) {
-    return chats.findIndex(x => x.contact.ChatId && x.contact.ChatId === contact.ChatId
-        || x.contact.UserId && x.contact.UserId === contact.UserId);
+    return chats.findIndex(x => ContactModel.isEqual(contact, x.contact));
 }
 
 export function findChatById(state: ChatsState, chatId: number) {

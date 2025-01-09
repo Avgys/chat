@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Shared.Misc;
 
 namespace Shared.BuilderConfig
@@ -67,7 +66,7 @@ namespace Shared.BuilderConfig
         public static void AddAppSettingsJSONFile(this WebApplicationBuilder builder)
         {            
             var appsettingsFilename = $"appsettings.{builder.Environment.EnvironmentName}.json";
-            builder.Configuration.AddJsonFile(appsettingsFilename, optional: true, reloadOnChange: true);
+            builder.Configuration.AddJsonFile(appsettingsFilename, optional: false, reloadOnChange: true);
         }
     }
 }

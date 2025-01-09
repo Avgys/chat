@@ -3,16 +3,16 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { FormatStringDate } from '@/Models/FormatStringDate'
-import { ContentMessage } from "@/Models/Message"
 import { Send } from "lucide-react"
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { AuthContext } from "../authComponent"
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { AuthContext } from "../../auth-component"
 import { ChatService } from "@/ApiServices/ChatService/ChatService"
-import { Chat } from "@/Models/Chat"
+import { Chat } from "@/models/Chat"
 import { useAppDispatch } from "@/store/hooks"
 import { addMessage } from "@/store/slice"
 import { cn } from "@/lib/utils"
+import { useService } from "@/customHooks/useService"
+import { MessageComponent } from "./message-component"
 
 function ChatArea({ chat, className }: { className: string, chat: Chat }) {
   const [message, setMessage] = useState("");
@@ -20,30 +20,30 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
 
   const messages = chat?.messages ?? [];
 
-  const { tokenInfo } = useContext(AuthContext);
-  const currentUserId = Number(tokenInfo!.UserId);
+  const { token } = useContext(AuthContext);
+  const currentUserId = useMemo(() => Number(token!.UserId), [token]);
+  const chatService = useService(ChatService);
 
   const dispatch = useAppDispatch();
 
   useEffect(() => { messageEndRef.current && messageEndRef.current!.scrollIntoView(); }, [chat?.messages]);
 
-  function sendMessage(messageText: string) {
+  const sendMessage = useCallback((messageText: string) => {
     if (chat == null || !(chat.contact.ChatId ?? chat.contact.UserId))
       return;
 
-
-
-    ChatService.sendMessage(messageText, chat.contact).then(result => {
+    chatService.sendMessage(messageText, chat.contact).then(result => {
       const { message, isMessageReceived } = result;
       dispatch(addMessage(message));
       messageEndRef.current!.scrollIntoView();
+      setMessage("")
     });
-  }
+  }, [chatService]);
 
   const messagesToShow = useMemo(() => {
     return messages.length > 0
       ? <>
-        {messages.map((x, i) => <MessageComponent key={i} message={x} isSender={x.SenderId == currentUserId} />)}
+        {messages.map((x, i) => <MessageComponent key={i} message={x} isSender={x.Sender?.UserId == currentUserId} />)}
       </>
       : <div className="text-center text-gray-400 my-4">
         This is the beginning of your conversation with {chat?.contact.Name}
@@ -52,11 +52,11 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
 
   return (<>
     <div className={cn("flex flex-auto w-full flex-col bg-gray-900 h-full", className)}>
-      <ScrollArea className="p-4">
+      <ScrollArea className="p-4 h-full">
         {messagesToShow}
         <span ref={messageEndRef} />
       </ScrollArea>
-      <div className="flex-2 p-4 border-t border-gray-700">
+      <div className="flex-1 p-4 border-t border-gray-700">
         <form onSubmit={(e) => { e.preventDefault(); sendMessage(message) }} className="flex items-center">
           <Input
             type="text"
@@ -73,25 +73,6 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
       </div>
     </div >
   </>);
-}
-
-function MessageComponent({ message, isSender }: { message: ContentMessage, isSender: boolean }) {
-  return <div
-    key={message.Id}
-    className={`flex ${isSender ? 'justify-end' : 'justify-start'} my-5`}>
-    <div
-      className={`max-w-[70%] rounded-lg p-3 ${isSender
-        ? 'bg-blue-500 text-white rounded-br-none'
-        : 'bg-blue-300 text-gray-800 rounded-bl-none'
-        }`}>
-      <p className="break-all w-full">
-        {message.Content}
-      </p>
-      <p className={`text-xs mt-1 ${isSender ? 'text-blue-100' : 'text-gray-500'}`}>
-        {FormatStringDate(message.TimeStampUtc, { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'long' })}
-      </p>
-    </div>
-  </div>
 }
 
 export default ChatArea;

@@ -1,27 +1,31 @@
-import { Chat } from "@/Models/Chat";
+import { Chat } from "@/models/Chat";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC";
 import { useAppDispatch } from "@/store/hooks";
 import { selectCaller } from "@/store/slice";
+import { useService } from "@/customHooks/useService";
+import { ConnectionManager } from "@/ApiServices/WebRTC/ConnectionManager";
 
 export function ContactInfo({ selectedChat, isInCall }: { selectedChat: Chat, isInCall: boolean }) {
     const dispatch = useAppDispatch();
+
+    const interClientConnection = useService(ConnectionManager);
 
     async function startCall() {
         if (!selectedChat)
             return;
 
-        WebRTCService.startConnection(selectedChat.contact).then(isConntected => {
-            if (!isConntected) {
-                dispatch(selectCaller(null));
-            }
-        });
+        interClientConnection
+            .startCall(selectedChat)
+            .then(isConntected => {
+                if (!isConntected)
+                    dispatch(selectCaller(null));
+            });
 
         dispatch(selectCaller(selectedChat));
     }
 
     return (
-        <div className="p-4 border-b flex flex-none items-center justify-between border-gray-700 h-min h-[5%]">
+        <div className="p-4 border-b flex items-center justify-between border-gray-700 h-min">
             <div className="flex items-center">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={selectedChat.contact.AvatarSrc} alt={selectedChat.contact.Name} />

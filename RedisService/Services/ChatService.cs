@@ -171,7 +171,7 @@ namespace Repositories.Services
                 {
                     Id = m.Id,
                     Contact = new ContactModel { ChatId = m.ChatId },
-                    SenderId = m.SenderId,
+                    Sender = new ContactModel { UserId = m.SenderId },
                     Content = m.Text,
                     TimeStampUtc = m.TimeStampUtc,
                 });

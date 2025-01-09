@@ -1,4 +1,4 @@
-import AuthComponent from "@/components/authComponent";
+import AuthComponent from "@/components/auth-component";
 
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
     return (  

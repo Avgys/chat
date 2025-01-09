@@ -1,20 +1,44 @@
-import { Credentials, CredentialsModel } from "@/Models/Credentials";
+import { Credentials, CredentialsModel } from "@/models/Credentials";
 import { ApiService } from "../ApiService";
 import { AUTH } from "@/apiPaths";
+import { inject, injectable } from "inversify";
+import { Token } from "./Models/TokenModel";
 
+@injectable()
 export class AuthService {
-    private static readonly  TokenKey: string = 'token';
-    public static UpdateCallbacks: ((token: string | null) => void)[] = [];
+    private readonly TokenKey: string = 'token';
+    public updateCallbacks: ((token: Token | null) => void)[] = [];
 
-    private static TokenInfo: Token | null = null;
-    private static lastTimer: NodeJS.Timeout | null = null;
+    private token: Token | null = null;
+    private lastTimer: NodeJS.Timeout | null = null;
 
-    private static async GetNewAccessToken() {
-        return await ApiService.GET<{ token: string }>(AUTH.REFRESH_PATH);
+    constructor(@inject(ApiService) private apiService: ApiService) {
+        this.apiService.middlewares.push(this.bearerMiddleware.bind(this));
     }
 
-    public static async Login(credentials: Credentials): Promise<LoginResponse | null> {
-        const responseSalt = await ApiService.GET<{ salt: string }>(AUTH.SALT_PATH + '/?name=' + credentials.login);
+    async bearerMiddleware(url: string, request: RequestInit) {
+        function isBearerIncluded(url: string) {
+            const includeBeareMatches = ['/api/chats'];
+            return includeBeareMatches.find(x => url.startsWith(x));
+        }
+
+        if (!isBearerIncluded(url))
+            return;
+
+        const token = await this.getTokenAsync();
+
+        const headers = new Headers(request.headers);
+        headers.append('Authorization', `Bearer ${token!.source}`);
+
+        request.headers = headers;
+    }
+
+    private GetNewAccessToken() {
+        return this.apiService.GET<{ token: string }>(AUTH.REFRESH_PATH);
+    }
+
+    public async Login(credentials: Credentials): Promise<LoginResponse | null> {
+        const responseSalt = await this.apiService.GET<{ salt: string }>(AUTH.SALT_PATH + '/?name=' + credentials.login);
 
         if (!responseSalt)
             return null;
@@ -26,16 +50,17 @@ export class AuthService {
             ClientPasswordHash: passwordHash,
             ClientSalt: responseSalt.salt
         };
-        const response = await ApiService.POST<LoginResponse>(AUTH.LOGIN_PATH, payload);
+
+        const response = await this.apiService.POST<LoginResponse>(AUTH.LOGIN_PATH, payload);
 
         if (response != null)
-            this.SetToken(response.token);
+            this.setToken(response.token);
 
         return response;
     }
 
-    public static async Register(credentials: Credentials): Promise<RegisterResponse | null> {
-        const responseSalt = await ApiService.GET<{ salt: string }>(AUTH.SALT_PATH);
+    public async Register(credentials: Credentials): Promise<RegisterResponse | null> {
+        const responseSalt = await this.apiService.GET<{ salt: string }>(AUTH.SALT_PATH);
 
         if (!responseSalt)
             return null;
@@ -47,31 +72,19 @@ export class AuthService {
             ClientPasswordHash: passwordHash,
             ClientSalt: responseSalt.salt
         };
-        return await ApiService.POST(AUTH.REGISTER_PATH, payload);
+
+        return await this.apiService.POST(AUTH.REGISTER_PATH, payload);
     }
 
-    static async IsAuth(): Promise<Token | null> {
-        const token = await this.GetTokenInfoAsync();
-        return token;
+    async IsAuth(): Promise<Token | null> {
+        return await this.getTokenAsync();
     }
 
-    static HashPassword(password: string, salt: string) {
+    HashPassword(password: string, salt: string) {
         return password + salt;
     }
 
-    static async GetTokenInfoAsync(): Promise<Token | null> {
-
-        if (!this.TokenInfo) {
-            const token = await this.GetTokenAsync();
-
-            if (token !== null)
-                this.TokenInfo = this.DecodeToken(token);
-        }
-
-        return this.TokenInfo;
-    }
-
-    static StartAutoUpdate(token: Token) {
+    StartAutoUpdate(token: Token) {
         if (this.lastTimer) {
             clearTimeout(this.lastTimer);
             this.lastTimer = null;
@@ -83,95 +96,54 @@ export class AuthService {
             clearTimeout(this.lastTimer!);
             this.lastTimer = null;
 
-            this.RefreshToken();
+            this.refreshToken();
         }, timeDelay);
     }
 
-    static IsTokenExpired(): boolean {
-        if (this.TokenInfo != null && this.TokenInfo.exp < this.UnixSecondsNow()) {
-            localStorage.removeItem(this.TokenKey);
-            this.TokenInfo = null;
-            return true;
-        }
-
-        return false;
-    }
-
-    static DecodeToken(encodedToken: string): Token | null {
-        const userInfoPart = encodedToken.split('.')[1];
-        let token;
-
-        try {
-            const userData = Buffer.from(userInfoPart, 'base64').toString('ascii');
-            token = JSON.parse(userData);
-        }
-        catch (e) {
-            token = null;
-            console.log(e);
-        }
-
-        return token;
-    }
-
-    static UnixSecondsNow() { return Math.floor(Date.now() / 1000); }
-
-    static async RefreshToken(): Promise<string | null> {
+    async refreshToken(): Promise<Token | null> {
         const response = await this.GetNewAccessToken();
 
         if (response) {
-            this.SetToken(response.token);
-            this.TokenInfo = this.DecodeToken(response.token);
-            if (this.TokenInfo === null)
-                setTimeout(this.RefreshToken, 0);
+            const token = this.setToken(response.token);
+
+            if (token === null)
+                setTimeout(this.refreshToken, 0);
             else
-                this.StartAutoUpdate(this.TokenInfo!);
+                this.StartAutoUpdate(token);
 
-            return response.token;
+            return token;
         }
 
         return null;
     }
 
-    static async GetTokenAsync(): Promise<string | null> {
-        let token = localStorage.getItem(this.TokenKey);
+    async getTokenAsync(): Promise<Token | null> {
+        const token = localStorage.getItem(this.TokenKey);
 
-        if (!token || this.IsTokenExpired()) {
-            token = await this.RefreshToken();
+        if (!token || this.token?.isExpired()) {
+            await this.refreshToken();
         }
 
-        return token;
+        return this.token;
     }
 
-    static SetToken(token: string) {
-        localStorage.setItem(this.TokenKey, token);
-        this.InvokeTokenUpdate(token);
-    }
+    setToken(tokenString: string) {
+        localStorage.setItem(this.TokenKey, tokenString);
 
-    static async TryGetBearerHeader(url: string): Promise<{ header: string, value: string } | null> {
-        if (IncludeBeareMatches.find(x => url.startsWith(x))) {
-            const token = await this.GetTokenAsync();
-            return { header: 'Authorization', value: `Bearer ${token}` };
+        try {
+            this.token = new Token(tokenString);
+        }
+        catch (e) {
+            console.log(e);
+            this.token = null;
         }
 
-        return null;
+        this.invokeTokenUpdate(this.token);
+
+        return this.token;
     }
 
-    static GetCookieMode(url: string): CredentialsMode {
-        const pathExists = IncludeRefreshCookieMatch.some(x => url.startsWith(x));
-        return pathExists ? 'include' : 'omit';
-    }
-
-    static InvokeTokenUpdate(token: string | null) {
-        this.UpdateCallbacks.forEach(element => element.call(null, token));
+    invokeTokenUpdate(token: Token | null) {
+        this.updateCallbacks.forEach(element => element.call(null, token));
     }
 }
-
-export type AuthParams = {
-    credMode: CredentialsMode,
-    IsBearerNeaded: boolean;
-}
-
-export type CredentialsMode = 'omit' | 'include' | 'same-origin';
-
-const IncludeRefreshCookieMatch = ['/api/auth/refreshToken', '/api/auth/login'];
-const IncludeBeareMatches = ['/api/chats']

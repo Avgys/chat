@@ -3,24 +3,31 @@ import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from
 import { AuthService } from "../AuthService/AuthService";
 
 import URLS from "@/urls";
-import { ContentMessage, Message, MessageType } from "@/Models/Message";
+import { ContentMessage, Message, MessageType } from "@/models/Message";
 import { CHAT_HUB } from "@/apiPaths";
+import { inject, injectable } from "inversify";
 
-export class SignalService {
-    private static currentConnection: HubConnection | null;
+@injectable()
+export class SignalConnection {
+    private currentConnection: HubConnection | undefined;
 
-    public static onMessageReceive: ((newMessage: ContentMessage) => void) | null = null;
+    public onMessageReceive: ((newMessage: ContentMessage) => void) | null = null;
 
-    public static onOfferReceive: ((offer: ContentMessage) => Promise<ContentMessage>) | null = null;
-    public static onRemoteIceCandidateOffer: ((offer: ContentMessage) => void) | null = null;
+    public OnRemoteClientRequest: ((offer: ContentMessage) => Promise<Message | ContentMessage>) | null = null;
+    public onRemoteClientMessage: ((offer: ContentMessage) => void) | null = null;
 
-    static async connectToServer() {
+    public constructor(@inject(AuthService) private authService: AuthService) {
+    }
+
+    async connectToServer() {
         console.debug('initiating ws connection');
 
         this.currentConnection = new HubConnectionBuilder()
             .withUrl(URLS.SIGNAL_URL + CHAT_HUB.HUB_PATH,
                 {
-                    accessTokenFactory: () => AuthService.GetTokenAsync().then(token => token ?? ''),
+                    accessTokenFactory: () => this.authService
+                        .getTokenAsync()
+                        .then(x => x?.source ?? ''),
                     //skipNegotiation: true,
                     //withCredentials: true,
                     transport: HttpTransportType.WebSockets,
@@ -40,25 +47,35 @@ export class SignalService {
         }
     }
 
-    static SetHandlers(connection: HubConnection) {
+    SetHandlers(connection: HubConnection) {
         connection.on('receivemessage', (data: any) => this.RouteMessage(data));
-        connection.on('receiverequest', async (data: any) => { return this.onOfferReceive && this.onOfferReceive(data) });
+        connection.on('receiverequest', async (data: any) => { return this.RouteRequest(data) });
 
         connection.onclose(async () => {
             console.error('SignalR connection close');
         });
     }
 
-    static RouteMessage(newMessage: ContentMessage) {
-        if (newMessage.Type == MessageType.Message && this.onMessageReceive) {
+    RouteMessage(newMessage: ContentMessage) {
+        if (newMessage.Type == MessageType.ChatMessage && this.onMessageReceive) {
             this.onMessageReceive(newMessage);
         }
-        else if (newMessage.Type == MessageType.IceCandidate && this.onRemoteIceCandidateOffer) {
-            this.onRemoteIceCandidateOffer(newMessage);
+        else if ((newMessage.Type === MessageType.IceCandidate
+            || newMessage.Type === MessageType.CloseConnection)
+            && this.onRemoteClientMessage) {
+            this.onRemoteClientMessage(newMessage);
         }
     }
 
-    public static async sendRequest(methodName: string, data: Message): Promise<ContentMessage | null> {
+    RouteRequest(newMessage: ContentMessage) {
+        if (newMessage.Type == MessageType.Offer && this.OnRemoteClientRequest) {
+            return this.OnRemoteClientRequest(newMessage);
+        }
+
+        return null;
+    }
+
+    public async sendRequest(methodName: string, data: Message): Promise<ContentMessage | null> {
         if (!this.currentConnection) {
             await this.connectToServer();
         }

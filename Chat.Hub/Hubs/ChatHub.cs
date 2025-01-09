@@ -2,7 +2,6 @@
 using Chat.SignalR.Hubs.Clients;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Persistence.Models;
 using Repositories.Services;
@@ -41,7 +40,7 @@ namespace Chat.SignalR.Hubs
                 await _chatService.SaveMessageAsync(new Message
                 {
                     ChatId = model.Contact.ChatId.Value,
-                    SenderId = model.SenderId,
+                    SenderId = model.Sender.UserId!.Value,
                     Text = model.Content,
                     TimeStampUtc = DateTime.UtcNow,
                 });
@@ -80,7 +79,12 @@ namespace Chat.SignalR.Hubs
         {
             var senderId = int.Parse(UserId);
             model.Contact.ChatId = await GetCommonChatIdAsync(model.Contact, senderId);
-            
+            model.Sender = new ContactModel
+            {
+                ChatId = model.Contact.ChatId,
+                UserId = senderId
+            };
+
             await ResendMessage(model, model.Type);
 
             return model;
@@ -89,39 +93,66 @@ namespace Chat.SignalR.Hubs
         //With waiting an answer from receiver(-s)
         public async Task<MessageModel> SendRequest(MessageModel offer)
         {
-            var callerId = int.Parse(UserId);
-            int chatId = await GetCommonChatIdAsync(offer.Contact, callerId);
+            var senderId = int.Parse(UserId);
+            int chatId = await GetCommonChatIdAsync(offer.Contact, senderId);
 
             var chat = await _chatService.Online.Chats.FindByIdAsync(chatId.ToString());
 
-            var caller = await _chatService.GetUserContactByIdAsync(int.Parse(UserId));
+            var caller = await _chatService.GetUserContactByIdAsync(senderId);
 
-            offer.Contact = caller!;
+            offer.Sender = caller!;
             offer.Contact.ChatId = chatId;
+
             var receivers = chat!.Participants
-                .Where(x => x.UserId != callerId && x.IsOnline)
+                .Where(x => x.UserId != senderId && x.IsOnline)
                 .ToArray();
 
             var receiversConnectionId = await _chatService.Online.Users
-                .FindByIdsAsync(receivers
-                    .Select(x => x.UserId.ToString()))
-                .ContinueWith(x => x.Result
-                    .Where(y => y.Value != null)
-                    .Select(y => y.Value!.ConnectionId)
-                    .ToArray());
+                    .FindByIdsAsync(receivers
+                        .Select(x => x.UserId.ToString()))
+                    .ContinueWith(x => x.Result
+                        .Where(y => y.Value != null)
+                        .Select(y => y.Value!.ConnectionId)
+                        .ToArray());
 
-            var answersTasks = new Task<MessageModel>[receiversConnectionId.Length];
+            MessageModel answer = null!;
 
-            for(int i = 0; i < receiversConnectionId.Length; i++)
+            if (chat.IsGroup)
             {
-                answersTasks[i] = Clients
-                    .Client(receiversConnectionId[i].ToString())
+                //Create SFU room
+                throw new NotImplementedException();
+                var answersTasks = new Task<MessageModel>[receiversConnectionId.Length];
+
+                for (int i = 0; i < receiversConnectionId.Length; i++)
+                {
+                    answersTasks[i] = Clients
+                        .Client(receiversConnectionId[i].ToString())
+                        .ReceiveRequest(offer);
+                }
+
+                MessageModel[] answers;
+
+                try
+                {
+                    answers = await Task.WhenAll(answersTasks);
+                }
+                catch (IOException ex)
+                {
+                    answers = answersTasks
+                        .Where(x => x.Status == TaskStatus.RanToCompletion)
+                        .Select(x => x.Result)
+                        .ToArray();
+                }
+            }
+            else if (receiversConnectionId.Any())
+            {
+                var answererId = receiversConnectionId.Single();
+                answer = await Clients
+                    .Client(answererId.ToString())
                     .ReceiveRequest(offer);
             }
 
-            var answers = await Task.WhenAll(answersTasks);
-
-            return answers[0];
+            return answer;
         }
 
         private async Task UserConnectsAsync(int userId)

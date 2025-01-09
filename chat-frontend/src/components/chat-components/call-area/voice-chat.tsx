@@ -1,75 +1,103 @@
 'use client'
 
-import { Chat } from "@/Models/Chat";
+import { Chat } from "@/models/Chat";
 import { Button } from "../../ui/button";
-import { Mic, MicOff, PhoneOff, Camera, CameraOff, Volume2 } from 'lucide-react'
+import { Mic, MicOff, PhoneOff, Camera, CameraOff } from 'lucide-react'
 import { useCallback, useEffect, useState } from "react";
-import { WebRTCService } from "@/ApiServices/WebRTC/WebRTC";
-import { Slider } from "../../ui/slider";
-import { Caller } from "./caller-icon";
-import { modifyVolumeStream } from "@/lib/utils";
-import { MediaKind } from "@/Models/MediaKind";
-import { ContentMessage, InterClientMessageType } from "@/Models/Message";
+import { MediaKind } from "@/models/MediaKind";
+import { ContentMessage, MessageType } from "@/models/Message";
+import { InterClientConnection } from "@/ApiServices/WebRTC/InterClientConnection";
+import { useService } from "@/customHooks/useService";
+import { VolumeSlider } from "@/components/ui/volume-slider";
+import { Media } from "../../../lib/media";
+import { CallerIcon } from "./caller-icon";
+import { ConnectionManager } from "@/ApiServices/WebRTC/ConnectionManager";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectCaller } from "@/store/slice";
+import { stat } from "fs";
 
-export default function VoiceChat({ callerChat, stopCall, localStream, remoteStream, initialPermissions }
-    : {
-        callerChat: Chat
-        , stopCall: () => void
-        , localStream: MediaStream
-        , remoteStream: MediaStream
-        , initialPermissions: MediaKind
-    }) {
+export default function VoiceChat({ initialPermissions, currentCaller }: { initialPermissions: MediaKind, currentCaller: Chat | null }) {
+    const dispatch = useAppDispatch();
+
+    const connectionManager = useService(ConnectionManager);
+
+    const [localMedia, setLocalMedia] = useState<Media>();
+    const [remoteCallers, setRemoteCallers] = useState<InterClientConnection[]>([]);
 
     const [mediaPermissions, setMediaPermissions] = useState<MediaKind>(initialPermissions);
 
-    useEffect(() => {
-        setMediaPermissions(initialPermissions)
-    }, [initialPermissions]);
+    const [callState, setCallState] = useState<string>('Not connected');
 
-    const sendPermissions = useCallback((newPermissions: MediaKind) => {
+    useEffect(() => { setMediaPermissions(initialPermissions) }, [initialPermissions]);
+
+    useEffect(() => {
+        connectionManager.onConnecting = (localMedia: Media, remoteCallers: InterClientConnection[]) => {
+            setLocalMedia(localMedia);
+            setRemoteCallers(remoteCallers);
+            setCallState("Connecting...");
+        };
+
+        connectionManager.onConnected = () => {
+            setCallState("Connected");
+            sendPermissions();
+        }
+
+        connectionManager.onClosed = () => {
+            setRemoteCallers([]);
+            setLocalMedia(undefined);
+            dispatch(selectCaller(null));
+            setCallState("Call ended");
+        }
+
+        connectionManager.onStateChange = (state) => {
+            setCallState(state);
+        }
+
+        () => {
+            connectionManager.onConnecting = undefined;
+            connectionManager.onConnected = undefined;
+            connectionManager.onClosed = undefined;
+        }
+    }, [connectionManager]);
+
+    const stopCall = useCallback(() => {
+        connectionManager.endCall();
+        dispatch(selectCaller(null));
+    }, [connectionManager]);
+
+    const sendPermissions = useCallback(() => {
+        if (connectionManager.state !== 'connected' || !currentCaller)
+            return;
+
         const message: ContentMessage = {
-            Contact: {},
-            Type: InterClientMessageType.MediaChange,
-            Content: JSON.stringify(newPermissions),
+            Contact: currentCaller!.contact,
+            Type: MessageType.MediaChange,
+            Content: JSON.stringify(mediaPermissions),
             TimeStampUtc: (new Date()).toISOString()
         };
 
-        WebRTCService.sendPeerMessage(message);
-    }, []);
+        connectionManager.sendPeerMessage(message);
+    }, [mediaPermissions, connectionManager]);
 
     const toggleMedia = useCallback((permissions: MediaKind) => {
-        let newPermissions: any = undefined;
         if (permissions.audio)
-            setMediaPermissions(prevState => {
-                newPermissions = { ...prevState, audio: !prevState.audio };
-                return newPermissions;
-            })
+            setMediaPermissions(prevState => { return { ...prevState, audio: !prevState.audio }; })
         else if (permissions.video)
-            setMediaPermissions(prevState => {
-                newPermissions = { ...prevState, video: !prevState.video };
-                return newPermissions;
-            });
-
+            setMediaPermissions(prevState => { return { ...prevState, video: !prevState.video }; });
     }, [setMediaPermissions])
 
     useEffect(() => {
-        if (!localStream)
-            return;
+        if (localMedia)
+            localMedia.setMediaKind(mediaPermissions);
 
-        localStream.getAudioTracks().forEach(x => x.enabled = mediaPermissions.audio!);
-        localStream.getVideoTracks().forEach(x => x.enabled = mediaPermissions.video!);
+        sendPermissions();
+    }, [mediaPermissions, localMedia, currentCaller]);
 
-        sendPermissions(mediaPermissions);
-    }, [mediaPermissions]);
-
-    function changeValue(value: number) {
-        const modifiedStream = modifyVolumeStream(localStream, value);
-        WebRTCService.replaceTracks(modifiedStream, { audio: true })
-    }
-
-    return (
+    return currentCaller && (
         <div className="flex-1 flex flex-col max-h-full h-full items-center justify-center bg-gray-900">
-            <Caller contact={callerChat.contact} stream={remoteStream} controls={true} userAudio={true} userVideo={false} />
+            <span>{callState}</span>
+            {remoteCallers.map(x => <CallerIcon key={x.contact.UserId} connection={x} media={x.media} controls={true} userAudio={true} />)}
+
             {/*LocalCaller */}
             <div className="space-x-4 m-y-16 flex-2">
                 <Button variant="ghost" size="icon" onClick={() => toggleMedia({ audio: true })}>
@@ -81,24 +109,11 @@ export default function VoiceChat({ callerChat, stopCall, localStream, remoteStr
                 <Button variant="destructive" size="icon" onClick={stopCall} >
                     <PhoneOff className="h-4 w-4" />
                 </Button>
-                <VolumeSlider defaultValue={100} onChange={changeValue} />
+                <VolumeSlider defaultValue={100} max={200} onChange={(value) => localMedia?.modifyVolume(value)} />
             </div>
-            {mediaPermissions.video! && <Caller userAudio={false} userVideo={mediaPermissions.video!} stream={localStream} controls={false} />}
+            {mediaPermissions.video!
+                && localMedia
+                && <CallerIcon userAudio={false} userVideo={mediaPermissions.video!} media={localMedia} controls={false} />}
         </div >
-    )
-}
-
-function VolumeSlider({ defaultValue, onChange }: { defaultValue: number; onChange: (value: number) => void }) {
-    return (
-        <div className="flex items-center space-x-2 bg-gray-800 rounded-full p-2">
-            <Volume2 className="h-4 w-4 text-muted-foreground" />
-            <Slider
-                defaultValue={[defaultValue]}
-                onValueChange={(newValue) => onChange(newValue[0])}
-                max={200}
-                step={1}
-                className="w-32"
-            />
-        </div>
     )
 }

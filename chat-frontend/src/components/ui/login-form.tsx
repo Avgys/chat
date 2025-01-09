@@ -3,7 +3,7 @@
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Credentials } from "@/Models/Credentials";
+import { Credentials } from "@/models/Credentials";
 import { useForm } from "react-hook-form";
 import { ReactNode } from "react";
 

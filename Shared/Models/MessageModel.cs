@@ -8,14 +8,16 @@ namespace Shared.Models
         IceCandidate = 1,
         Offer = 2,
         Answer,
-        CloseConnection
+        CloseConnection,
+        MediaChange,
+        Connected
     }
 
     public record MessageModel
     {
         public int? Id { get; set; }
         public ContactModel Contact { get; set; } = default!;
-        public int SenderId { get; set; } = -1;
+        public ContactModel Sender { get; set; } = default!;
         public string Content { get; set; } = default!;
         public DateTime TimeStampUtc { get; set; }
         public MessageType Type { get; set; }

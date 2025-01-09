@@ -3,12 +3,13 @@
 import { ChatService } from "@/ApiServices/ChatService/ChatService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Chat } from "@/Models/Chat";
-import { FormatStringDate } from "@/Models/FormatStringDate";
+import { Chat } from "@/models/Chat";
+import { FormatStringDate } from "@/models/FormatStringDate";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addChats, selectChat, getCurrentChat, updateOrAddChat } from "@/store/slice";
 import { useMemo, useState } from "react";
 import SearchInput from "../ui/search-input";
+import { useService } from "@/customHooks/useService";
 
 function ContactList() {
     const [contactsFilter, setContactsFilter] = useState<string>('');
@@ -16,6 +17,8 @@ function ContactList() {
 
     const unFilteredChats = useAppSelector(x => x.chatState.chats);
     const selectedChat = useAppSelector(x => getCurrentChat(x.chatState));
+
+    const chatService = useService(ChatService);
 
     const dispatch = useAppDispatch();
 
@@ -25,7 +28,7 @@ function ContactList() {
 
     async function onChatSelect(chat: Chat) {
         if (!chat.isLoaded && chat.contact.ChatId) {
-            chat = await ChatService.LoadChat(chat.contact.ChatId);
+            chat = await chatService.LoadChat(chat.contact.ChatId);
             dispatch(updateOrAddChat(chat))
         }
 
@@ -45,7 +48,7 @@ function ContactList() {
 
         setUsedSearches([...usedSearches, newFilter]);
 
-        ChatService.loadContacts(newFilter).then((contacts) => {
+        chatService.loadContacts(newFilter).then((contacts) => {
             const newChats: Chat[] = contacts.map(x => { return { contact: x, messages: null, participants: null, isLoaded: false } });
             dispatch(addChats(newChats))
         })

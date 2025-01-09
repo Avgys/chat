@@ -3,8 +3,8 @@ import { ContactModel } from "./Contact";
 export interface Message {
     Id?: number;
     Contact: ContactModel;
-    Type: MessageType | InterClientMessageType;
-    SenderId?: number;
+    Sender?: ContactModel;
+    Type: MessageType;
     TimeStampUtc: string;
 }
 
@@ -13,16 +13,11 @@ export interface ContentMessage extends Message {
 }
 
 export enum MessageType {
-    'Message',
+    'ChatMessage',
     'IceCandidate',
     'Offer',
     'Answer',
     'CloseConnection',
-}
-
-export enum InterClientMessageType {
-    'Connected',
-    'Disconnected', 
-    'Inform',
-    'MediaChange'
+    'MediaChange',
+    'Connected'
 }
