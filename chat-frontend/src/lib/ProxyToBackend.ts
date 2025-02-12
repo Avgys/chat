@@ -15,8 +15,7 @@ export async function ProxyToBackend(request: NextRequest, ...matches: Match[]):
         const req: any = {
             method: request.method,
             headers: request.headers,
-            mode: request.mode,
-            
+            mode: request.mode,            
         };
 
         if (request.body) {

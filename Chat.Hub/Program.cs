@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NLog;
 using NLog.Web;
 using Persistence;
-using Repositories.HostedServices;
+using Repositories.HostedServices.Kafka;
+using Repositories.Kafka;
 using Repositories.Services;
 using Shared.BuilderConfig;
 
@@ -33,6 +34,9 @@ namespace Chat.SignalR
 
                 builder.Services.AddChatServices(builder.Configuration);
                 //builder.Services.AddHostedService<RedisClearService>();
+
+                builder.Services.AddKafkaConsumer(builder.Configuration);
+                builder.Services.AddHostedService<KafkaMessageBuffer>();
 
                 builder.Services.AddJwtAuthentication(builder.Configuration, options =>
                 {

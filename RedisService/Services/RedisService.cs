@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Persistence.Models;
 using Redis.OM;
 using Redis.OM.Searching;
-using Repositories.HostedServices;
+using Repositories.HostedServices.Redis;
 using Repositories.Models.Redis;
 
 namespace Repositories.Services

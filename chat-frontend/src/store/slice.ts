@@ -31,16 +31,24 @@ const chatSlice = createSlice({
             if (!chat?.messages)
                 return;
 
-            if (message.Id == null)
+            let sameIndex = -1;
+            if (message.Id === null)
                 message.Id = Math.max(...chat.messages.map(x => x.Id as number)) + 1;
+            else
+                sameIndex = chat.messages.findIndex(x => x.Id === message.Id);
 
-            chat.messages.push(message);
+            if (sameIndex === -1) {
+                chat.messages.push(message);
 
-            chat!.contact = {
-                ...chat!.contact,
-                LastMessage: message.Content,
-                LastMessageUTC: message.TimeStampUtc
-            };
+                chat!.contact = {
+                    ...chat!.contact,
+                    LastMessage: message.Content,
+                    LastMessageUTC: message.TimeStampUtc
+                };
+            }
+            else{
+                chat.messages[sameIndex] = message;
+            }
         },
         addChats: (state, action: PayloadAction<Chat[]>) => {
             const newChats = action.payload.filter(x => findChatIndexByContact(state.chats, x.contact) === -1);

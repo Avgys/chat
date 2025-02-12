@@ -65,7 +65,7 @@ export class ChatService {
         };
     }
 
-    public async sendMessage(messageText: string, contact: ContactModel) {
+    public async sendMessage(messageText: string, contact: ContactModel): Promise<{ message: ContentMessage, isMessageReceived: boolean }> {
         const userToken = await this.authService.getTokenAsync();
         const senderId = userToken?.UserId ?? null;
 
@@ -77,9 +77,11 @@ export class ChatService {
             Sender: { UserId: Number(senderId) },
         };
 
-        const isMessageReceived = this.signalConnection.sendRequest(CHAT_HUB.SEND_MESSAGE_METHOD, message)
-            .then(x => x?.Content === message.Content);
+        // const isMessageReceived = this.signalConnection.sendRequest(CHAT_HUB.SEND_MESSAGE_METHOD, message)
+        //     .then(x => x?.Content === message.Content);
 
-        return { message, isMessageReceived };
+        const sdf = await this.apiService.POST<boolean>(CHATS.SEND_MESSAGE, message);
+
+        return { message, isMessageReceived: true };
     }
 }
