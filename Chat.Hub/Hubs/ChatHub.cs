@@ -1,9 +1,10 @@
 ﻿using Auth.Shared.Misc;
 using Chat.SignalR.Hubs.Clients;
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Persistence.Models;
+using Repositories.Kafka;
 using Repositories.Services;
 using Shared.Models;
 using Shared.Models.ContactModels;
@@ -11,10 +12,11 @@ using Shared.Models.ContactModels;
 namespace Chat.SignalR.Hubs
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public partial class ChatHub(ChatService chatService) : Hub<IChatClient>
+    public partial class ChatHub(ChatService chatService, ProducerBuilder<int, MessageModel> builder) : Hub<IChatClient>
     {
         private readonly ChatService _chatService = chatService;
         private string UserId => Context.User!.Claims.Single(x => x.Type == AuthConsts.Claims.UserId).Value;
+
 
         public override async Task OnConnectedAsync()
         {
@@ -30,20 +32,11 @@ namespace Chat.SignalR.Hubs
             return;
         }
 
-        private async Task ResendMessage(MessageModel model, MessageType messageType)
+        private async Task ResendMessage(MessageModel model)
         {
             await Clients
              .GroupExcept(model.Contact.ChatId!.Value.ToString(), Context.ConnectionId)
              .ReceiveMessage(model);
-
-            if (messageType == MessageType.ChatMessage)
-                await _chatService.SaveMessageAsync(new Message
-                {
-                    ChatId = model.Contact.ChatId.Value,
-                    SenderId = model.Sender.UserId!.Value,
-                    Text = model.Content,
-                    TimeStampUtc = DateTime.UtcNow,
-                });
         }
 
         private async Task<int> GetCommonChatIdAsync(ContactModel contact, int callerId)
@@ -79,15 +72,26 @@ namespace Chat.SignalR.Hubs
         {
             var senderId = int.Parse(UserId);
             model.Contact.ChatId = await GetCommonChatIdAsync(model.Contact, senderId);
+
             model.Sender = new ContactModel
             {
                 ChatId = model.Contact.ChatId,
                 UserId = senderId
             };
 
-            await ResendMessage(model, model.Type);
+            await ResendMessage(model);
+            await LogMessageToKafka(model);
 
             return model;
+        }
+
+        private async Task LogMessageToKafka(MessageModel model)
+        {
+            using (var producer = builder.Build())
+            {
+                var packet = new Message<int, MessageModel> { Key = model.Contact.ChatId!.Value, Value = model };
+                var result = await producer.ProduceAsync(KafkaConsts.MessageTopic, packet);
+            }
         }
 
         //With waiting an answer from receiver(-s)

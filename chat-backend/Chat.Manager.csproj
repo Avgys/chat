@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>chat_backend</RootNamespace>
+    <RootNamespace>Chat.Manager</RootNamespace>
     <UserSecretsId>8c2664aa-03e4-4ff0-ab38-f32b8b1aa7b5</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>

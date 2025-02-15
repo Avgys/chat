@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NLog;
 using NLog.Web;
 using Persistence;
-using Repositories.HostedServices.Kafka;
 using Repositories.Kafka;
 using Repositories.Services;
 using Shared.BuilderConfig;
+using Shared.Models;
 
 namespace Chat.SignalR
 {
@@ -33,10 +33,8 @@ namespace Chat.SignalR
                 builder.Services.AddPersistence(builder.Configuration);
 
                 builder.Services.AddChatServices(builder.Configuration);
-                //builder.Services.AddHostedService<RedisClearService>();
 
-                builder.Services.AddKafkaConsumer(builder.Configuration);
-                builder.Services.AddHostedService<KafkaMessageBuffer>();
+                builder.Services.AddSingleton(KafkaBuilders.CreateProducer<int, MessageModel>(builder));
 
                 builder.Services.AddJwtAuthentication(builder.Configuration, options =>
                 {
@@ -63,7 +61,6 @@ namespace Chat.SignalR
                         options.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
                         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
                     });
-
 
                 var app = builder.Build();
 

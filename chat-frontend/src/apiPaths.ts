@@ -11,7 +11,10 @@ export abstract class CHATS {
     static CHATS_PATH = '/api/chats';
     static CHAT_MESSAGES_PATH = '/api/chats/messages';
     static CHAT_PARTICIPANTS_PATH = '/api/chats/participants';
-    static SEND_MESSAGE = '/api/send/message';
+}
+
+export abstract class SEND {
+    static SEND_MESSAGE = '/api/send';
 }
 
 export abstract class CHAT_HUB {

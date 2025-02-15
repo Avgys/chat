@@ -1,4 +1,4 @@
-import { CHAT_HUB, CHATS } from "@/apiPaths";
+import { CHAT_HUB, CHATS, SEND } from "@/apiPaths";
 import { ApiService } from "../ApiService";
 import { ContactModel, FixContactType } from "@/models/Contact";
 import { ContentMessage, MessageType } from "@/models/Message";
@@ -77,11 +77,12 @@ export class ChatService {
             Sender: { UserId: Number(senderId) },
         };
 
-        // const isMessageReceived = this.signalConnection.sendRequest(CHAT_HUB.SEND_MESSAGE_METHOD, message)
-        //     .then(x => x?.Content === message.Content);
+        const isMessageReceived = await this.signalConnection
+            .sendRequest(CHAT_HUB.SEND_MESSAGE_METHOD, message)
+            .then(x => x?.Content === message.Content);
 
-        const sdf = await this.apiService.POST<boolean>(CHATS.SEND_MESSAGE, message);
+        //const sdf = await this.apiService.POST<boolean>(SEND.SEND_MESSAGE, message);
 
-        return { message, isMessageReceived: true };
+        return { message, isMessageReceived: isMessageReceived };
     }
 }

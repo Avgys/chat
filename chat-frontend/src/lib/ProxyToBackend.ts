@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export type Match = { path: string, redirectUrl: string };
 
-export async function ProxyToBackend(request: NextRequest, ...matches: Match[]): Promise<Response | null> {
+export async function ProxyToBackend(request: NextRequest, matches: Match[]): Promise<Response | null> {
 
-    const match = matches.find(x => request.nextUrl.pathname.startsWith(x.path))
+    const match = matches.find(x => request.nextUrl.pathname.startsWith(x.path));
+
     if (!match)
         return null;
 

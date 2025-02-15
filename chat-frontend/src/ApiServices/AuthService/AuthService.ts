@@ -1,6 +1,6 @@
 import { Credentials, CredentialsModel } from "@/models/Credentials";
 import { ApiService } from "../ApiService";
-import { AUTH, CHATS } from "@/apiPaths";
+import { AUTH, CHATS, SEND } from "@/apiPaths";
 import { inject, injectable } from "inversify";
 import { Token } from "./Models/TokenModel";
 
@@ -18,7 +18,7 @@ export class AuthService {
 
     async bearerMiddleware(url: string, request: RequestInit) {
         function isBearerIncluded(url: string) {
-            const includeBeareMatches = [CHATS.CHATS_PATH, CHATS.SEND_MESSAGE];
+            const includeBeareMatches = [CHATS.CHATS_PATH, SEND.SEND_MESSAGE];
             return includeBeareMatches.find(x => url.startsWith(x));
         }
 

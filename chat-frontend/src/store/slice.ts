@@ -32,7 +32,7 @@ const chatSlice = createSlice({
                 return;
 
             let sameIndex = -1;
-            if (message.Id === null)
+            if (message.Id == null)
                 message.Id = Math.max(...chat.messages.map(x => x.Id as number)) + 1;
             else
                 sameIndex = chat.messages.findIndex(x => x.Id === message.Id);

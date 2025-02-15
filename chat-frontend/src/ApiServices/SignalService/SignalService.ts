@@ -23,13 +23,11 @@ export class SignalConnection {
         console.debug('initiating ws connection');
 
         this.currentConnection = new HubConnectionBuilder()
-            .withUrl(URLS.SIGNAL_URL + CHAT_HUB.HUB_PATH,
+            .withUrl(URLS.BACKEND_URL + CHAT_HUB.HUB_PATH,
                 {
                     accessTokenFactory: () => this.authService
                         .getTokenAsync()
                         .then(x => x?.source ?? ''),
-                    //skipNegotiation: true,
-                    //withCredentials: true,
                     transport: HttpTransportType.WebSockets,
                 })
             .withAutomaticReconnect()
@@ -88,8 +86,4 @@ export class SignalConnection {
             return null;
         }
     }
-}
-
-function useSignalService() {
-
 }

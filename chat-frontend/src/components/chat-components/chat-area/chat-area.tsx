@@ -34,7 +34,8 @@ function ChatArea({ chat, className }: { className: string, chat: Chat }) {
 
     chatService.sendMessage(messageText, chat.contact).then(result => {
       const { message, isMessageReceived } = result;
-      dispatch(addMessage(message));
+      if (isMessageReceived)
+        dispatch(addMessage(message));
       messageEndRef.current!.scrollIntoView();
       setMessage("")
     });

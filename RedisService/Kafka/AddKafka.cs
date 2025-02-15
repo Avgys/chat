@@ -1,41 +1,41 @@
 ﻿using Confluent.Kafka;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Repositories.Kafka
 {
-    public static class KafkaExtension
+    public static class KafkaBuilders
     {
         const string ConnectionKey = "Kafka";
 
-        public static IServiceCollection AddKafkaConsumer(this IServiceCollection services, 
-            IConfiguration configuration)
+        public static ConsumerBuilder<K, V> CreateConsumer<K, V>(WebApplicationBuilder appBuilder)
         {
             var config = new ConsumerConfig
             {
-                BootstrapServers = configuration.GetConnectionString(ConnectionKey),
-                GroupId = "message-consumer",
+                BootstrapServers = appBuilder.Configuration.GetConnectionString(ConnectionKey),
+                GroupId = typeof(V).Name + "-consumer-" + appBuilder.Environment.ApplicationName,
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
-            services.AddSingleton(new ConsumerBuilder<string, string>(config).Build());
-
-            return services;
+            return new ConsumerBuilder<K, V>(config)
+                .SetValueDeserializer(new JsonDeserializer<V>());
         }
 
-        public static IServiceCollection AddKafkaProducer(this IServiceCollection services, 
-            IConfiguration configuration)
+        public static ProducerBuilder<K, V> CreateProducer<K, V>(WebApplicationBuilder appBuilder)
         {
-            var config = new ConsumerConfig
+            var config = new ProducerConfig
             {
-                BootstrapServers = configuration.GetConnectionString(ConnectionKey),
-                ClientId = "message-producer",
+                BootstrapServers = appBuilder.Configuration.GetConnectionString(ConnectionKey),
+                ClientId = typeof(V).Name + "-producer-" + appBuilder.Environment.ApplicationName,
             };
 
-            services.AddSingleton(new ProducerBuilder<string, string>(config).Build());
-
-            return services;
+            return new ProducerBuilder<K, V>(config)
+                .SetValueSerializer(new JsonSerializer<V>());
         }
     }
-}
 
+    public static class KafkaConsts
+    {
+        public const string MessageTopic = "message-topic";
+    }
+}
